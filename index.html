@@ -334,7 +334,7 @@
                 <ul style="color: #856404; font-size: 12px; line-height: 1.6; margin: 0; padding-left: 20px;">
                     <li>O uso deve estar em conformidade com as leis locais e direitos autorais</li>
                     <li><strong>Não hospedamos links ou conteúdos</strong> - apenas fornecemos uma interface</li>
-                    <li>Os conteúdos da busca são de responsabilidade dos sites: <a href="https://btdig.com/" target="_blank" style="color: #856404; text-decoration: underline;">BTDigg</a>, <a href="https://ext.to/" target="_blank" style="color: #856404; text-decoration: underline;">Ext.to</a>, <a href="https://1337x.to/" target="_blank" style="color: #856404; text-decoration: underline;">1337x</a>, <a href="https://yts.mx/" target="_blank" style="color: #856404; text-decoration: underline;">YTS</a>, <a href="https://thepiratebay.org/" target="_blank" style="color: #856404; text-decoration: underline;">Pirate Bay</a></li>
+                    <li>Os conteúdos da busca são de responsabilidade dos sites: <a href="https://btdig.com/" target="_blank" style="color: #856404; text-decoration: underline;">BTDigg</a>, <a href="https://ext.to/" target="_blank" style="color: #856404; text-decoration: underline;">Ext.to</a>, <a href="https://f1337x.to/" target="_blank" style="color: #856404; text-decoration: underline;">1337x</a>, <a href="https://yts.mx/" target="_blank" style="color: #856404; text-decoration: underline;">YTS</a>, <a href="https://thepiratebay.org/" target="_blank" style="color: #856404; text-decoration: underline;">Pirate Bay</a></li>
                     <li>O player usa o serviço <a href="https://webtor.io/" target="_blank" style="color: #856404; text-decoration: underline;">Webtor.io</a></li>
                     <li>Os desenvolvedores não se responsabilizam pelo uso indevido desta ferramenta</li>
                     <li>Use com responsabilidade e respeite os direitos autorais</li>
@@ -732,7 +732,7 @@
         
         async function searchExtToAPI(query) {
             // Ext.to - site confiável para torrents
-            const endpoint = `https://ext.to/search?q=${encodeURIComponent(query)}`;
+            const endpoint = `https://ext.to/browse/?q=${encodeURIComponent(query)}&with_adult=1`;
             const proxy = 'https://corsproxy.io/?';
             
             try {
@@ -760,7 +760,7 @@
         
         async function search1337xAPI(query) {
             // 1337x.to - site popular para torrents
-            const endpoint = `https://1337x.to/search/${encodeURIComponent(query)}/1/`;
+            const endpoint = `https://f1337x.to/search/${encodeURIComponent(query)}/1/`;
             const proxy = 'https://corsproxy.io/?';
             
             try {

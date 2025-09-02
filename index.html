@@ -479,15 +479,11 @@
                 webtorConfig.subtitles = subtitles;
             }
             
-            // Sistema de monitoramento inteligente do player
+            // Sistema de monitoramento simples do player
             let playerCheckInterval = null;
-            let playerCheckCount = 0;
-            const maxPlayerChecks = 60; // 60 verificações = 30 segundos (500ms cada)
             
             // Função para verificar o estado do player
             const checkPlayerState = () => {
-                playerCheckCount++;
-                
                 // Verificar se o player está realmente funcionando
                 const playerElement = document.getElementById('webtor-player');
                 if (playerElement) {
@@ -498,7 +494,6 @@
                         if (videoElement.readyState >= 2 || videoElement.readyState === 1) {
                             playerReady = true;
                             clearInterval(playerCheckInterval);
-                            clearTimeout(loadingTimeout);
                             hideProgressIndicator();
                             showProgressIndicator('✅ Player carregado com sucesso!', 'success', 3000);
                             return;
@@ -508,63 +503,37 @@
                         if (!videoElement.paused && !videoElement.ended) {
                             playerPlaying = true;
                             clearInterval(playerCheckInterval);
-                            clearTimeout(loadingTimeout);
                             hideProgressIndicator();
                             showProgressIndicator('▶️ Vídeo reproduzindo!', 'success', 2000);
                             return;
                         }
                     }
                 }
-                
-                // Se atingiu o limite de verificações, tentar método alternativo
-                if (playerCheckCount >= maxPlayerChecks) {
-                    clearInterval(playerCheckInterval);
-                    if (!playerReady && !playerPlaying && !playerError && document.getElementById('progressIndicator')) {
-                        hideProgressIndicator();
-                        showProgressIndicator('⚠️ Timeout: Tentando método alternativo...', 'warning');
-                        setTimeout(() => {
-                            tryAlternativeMethod();
-                        }, 2000);
-                    }
-                }
             };
             
-            // Iniciar monitoramento do player
+            // Iniciar monitoramento do player por 10 segundos apenas
             playerCheckInterval = setInterval(checkPlayerState, 500);
-            
-            // Adicionar timeout de fallback (mais longo)
-            const loadingTimeout = setTimeout(() => {
+            setTimeout(() => {
                 clearInterval(playerCheckInterval);
-                // Só tentar método alternativo se o player não estiver pronto E não estiver reproduzindo E não houve erro
-                if (!playerReady && !playerPlaying && !playerError && document.getElementById('progressIndicator')) {
-                    hideProgressIndicator();
-                    showProgressIndicator('⚠️ Timeout: Tentando método alternativo...', 'warning');
-                    setTimeout(() => {
-                        tryAlternativeMethod();
-                    }, 2000);
-                }
-            }, 35000); // 35 segundos
+            }, 10000); // Para o monitoramento após 10 segundos
             
-            // Limpar timeout e intervalo quando o player carregar com sucesso
+            // Limpar intervalo quando o player carregar com sucesso
             const originalReady = webtorConfig.on.ready;
             webtorConfig.on.ready = function() {
-                clearTimeout(loadingTimeout);
                 clearInterval(playerCheckInterval);
                 originalReady();
             };
             
-            // Limpar timeout e intervalo quando começar a reproduzir
+            // Limpar intervalo quando começar a reproduzir
             const originalPlaying = webtorConfig.on.playing;
             webtorConfig.on.playing = function() {
-                clearTimeout(loadingTimeout);
                 clearInterval(playerCheckInterval);
                 originalPlaying();
             };
             
-            // Limpar timeout e intervalo em caso de erro
+            // Limpar intervalo em caso de erro
             const originalError = webtorConfig.on.error;
             webtorConfig.on.error = function(error) {
-                clearTimeout(loadingTimeout);
                 clearInterval(playerCheckInterval);
                 originalError(error);
             };
@@ -666,94 +635,7 @@
         
 
         
-        // Método alternativo usando elemento video diretamente
-        function tryAlternativeMethod() {
-            const magnet = document.getElementById('magnet').value.trim();
-            
-            if (!magnet) {
-                showStatus('❌ Por favor, cole um magnet link!', 'error');
-                return;
-            }
-            
-            showStatus('🔧 Tentando método alternativo...', 'loading');
-            
-            // Limpar player anterior
-            document.getElementById('player').innerHTML = '';
-            
-            // Criar elemento video diretamente
-            const videoElement = document.createElement('video');
-            videoElement.id = 'webtor-video';
-            videoElement.controls = true;
-            videoElement.style.width = '100%';
-            videoElement.style.height = '500px';
-            videoElement.style.border = '2px solid #ddd';
-            videoElement.style.borderRadius = '8px';
-            videoElement.src = magnet;
-            
-            // Variáveis para controle de estado do método alternativo
-            let alternativeMethodLoaded = false;
-            let alternativeMethodPlaying = false;
-            let alternativeMethodError = false;
-            
-            // Adicionar event listeners
-            videoElement.addEventListener('loadstart', () => {
-                showStatus('🎥 Carregando vídeo (método alternativo)...', 'info');
-            });
-            
-            videoElement.addEventListener('loadedmetadata', () => {
-                showStatus('📊 Metadados carregados (método alternativo)...', 'info');
-            });
-            
-            videoElement.addEventListener('canplay', () => {
-                alternativeMethodLoaded = true;
-                showStatus('✅ Vídeo carregado com método alternativo!', 'success');
-                setTimeout(() => {
-                    const status = document.getElementById('status');
-                    if (status.innerHTML.includes('✅ Vídeo carregado com método alternativo!')) {
-                        status.innerHTML = '';
-                    }
-                }, 3000);
-            });
-            
-            videoElement.addEventListener('play', () => {
-                alternativeMethodPlaying = true;
-                showStatus('▶️ Reproduzindo com método alternativo!', 'success');
-                setTimeout(() => {
-                    const status = document.getElementById('status');
-                    if (status.innerHTML.includes('▶️ Reproduzindo com método alternativo!')) {
-                        status.innerHTML = '';
-                    }
-                }, 2000);
-            });
-            
-            videoElement.addEventListener('error', (e) => {
-                alternativeMethodError = true;
-                showStatus('❌ Método alternativo também falhou. O torrent pode não conter vídeos válidos.', 'error');
-            });
-            
-            // Adicionar ao DOM
-            document.getElementById('player').appendChild(videoElement);
-            
-            // Timeout para método alternativo - só ativar se não carregou e não está reproduzindo
-            const alternativeTimeout = setTimeout(() => {
-                if (!alternativeMethodLoaded && !alternativeMethodPlaying && !alternativeMethodError) {
-                    showStatus('⚠️ Método alternativo também não funcionou. O torrent pode estar sem seeders ou não conter vídeos válidos.', 'error');
-                }
-            }, 20000);
-            
-            // Limpar timeout se o vídeo carregar com sucesso
-            videoElement.addEventListener('canplay', () => {
-                clearTimeout(alternativeTimeout);
-            });
-            
-            videoElement.addEventListener('play', () => {
-                clearTimeout(alternativeTimeout);
-            });
-            
-            videoElement.addEventListener('error', () => {
-                clearTimeout(alternativeTimeout);
-            });
-        }
+
         
 
         
@@ -787,9 +669,17 @@
                 let successfulSearches = 0;
                 
                 results.forEach((result, index) => {
+                    const sourceNames = ['BTDigg', 'Ext.to', '1337x', 'YTS', 'Pirate Bay'];
+                    const sourceName = sourceNames[index] || `Source ${index}`;
+                    
                     if (result.status === 'fulfilled' && result.value.length > 0) {
                         allResults = allResults.concat(result.value);
                         successfulSearches++;
+                        console.log(`✅ ${sourceName}: ${result.value.length} resultados encontrados`);
+                    } else if (result.status === 'rejected') {
+                        console.log(`❌ ${sourceName}: Erro - ${result.reason}`);
+                    } else {
+                        console.log(`⚠️ ${sourceName}: Nenhum resultado encontrado`);
                     }
                 });
                 
@@ -846,11 +736,14 @@
                     method: 'GET',
                     headers: {
                         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                        'Referer': 'https://ext.to/',
+                        'Origin': 'https://ext.to'
                     }
                 });
                 
                 if (!response.ok) {
+                    console.log(`Ext.to HTTP ${response.status}: ${response.statusText}`);
                     throw new Error(`HTTP ${response.status}`);
                 }
                 
@@ -860,6 +753,7 @@
                 return results;
                 
             } catch (error) {
+                console.log('Ext.to error:', error.message);
                 return [];
             }
         }
@@ -874,11 +768,14 @@
                     method: 'GET',
                     headers: {
                         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                        'Referer': 'https://f1337x.to/',
+                        'Origin': 'https://f1337x.to'
                     }
                 });
                 
                 if (!response.ok) {
+                    console.log(`1337x HTTP ${response.status}: ${response.statusText}`);
                     throw new Error(`HTTP ${response.status}`);
                 }
                 
@@ -888,6 +785,7 @@
                 return results;
                 
             } catch (error) {
+                console.log('1337x error:', error.message);
                 return [];
             }
         }
@@ -902,11 +800,14 @@
                     method: 'GET',
                     headers: {
                         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                        'Referer': 'https://yts.mx/',
+                        'Origin': 'https://yts.mx'
                     }
                 });
                 
                 if (!response.ok) {
+                    console.log(`YTS HTTP ${response.status}: ${response.statusText}`);
                     throw new Error(`HTTP ${response.status}`);
                 }
                 
@@ -916,6 +817,7 @@
                 return results;
                 
             } catch (error) {
+                console.log('YTS error:', error.message);
                 return [];
             }
         }
@@ -930,11 +832,14 @@
                     method: 'GET',
                     headers: {
                         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                        'Referer': 'https://thepiratebay.org/',
+                        'Origin': 'https://thepiratebay.org'
                     }
                 });
                 
                 if (!response.ok) {
+                    console.log(`Pirate Bay HTTP ${response.status}: ${response.statusText}`);
                     throw new Error(`HTTP ${response.status}`);
                 }
                 
@@ -944,6 +849,7 @@
                 return results;
                 
             } catch (error) {
+                console.log('Pirate Bay error:', error.message);
                 return [];
             }
         }
@@ -1190,17 +1096,44 @@
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             
-            // Procurar por elementos de resultado do YTS
-            const resultElements = doc.querySelectorAll('.browse-movie-wrap');
+            // Debug: verificar se há conteúdo
+            console.log('YTS HTML length:', html.length);
+            console.log('YTS HTML preview:', html.substring(0, 500));
+            
+            // Procurar por elementos de resultado do YTS - tentar múltiplos seletores
+            let resultElements = doc.querySelectorAll('.browse-movie-wrap');
+            if (resultElements.length === 0) {
+                resultElements = doc.querySelectorAll('.movie-list .movie');
+            }
+            if (resultElements.length === 0) {
+                resultElements = doc.querySelectorAll('.movie');
+            }
+            if (resultElements.length === 0) {
+                resultElements = doc.querySelectorAll('[class*="movie"]');
+            }
+            
+            console.log('YTS result elements found:', resultElements.length);
             
             resultElements.forEach((element, index) => {
                 try {
-                    const titleLink = element.querySelector('.browse-movie-title a');
+                    // Tentar múltiplos seletores para o título
+                    let titleLink = element.querySelector('.browse-movie-title a');
+                    if (!titleLink) {
+                        titleLink = element.querySelector('.movie-title a');
+                    }
+                    if (!titleLink) {
+                        titleLink = element.querySelector('a[href*="/movies/"]');
+                    }
+                    if (!titleLink) {
+                        titleLink = element.querySelector('a');
+                    }
+                    
                     if (!titleLink) return;
                     
                     const title = titleLink.textContent.trim();
+                    if (!title || title.length < 3) return;
                     
-                    // YTS não tem magnet direto, precisa ir para a página do filme
+                    // YTS não tem magnet direto, mas podemos criar um link para a página do filme
                     const movieLink = titleLink.href;
                     if (!movieLink) return;
                     
@@ -1211,32 +1144,34 @@
                     let year = 'N/A';
                     let rating = 'N/A';
                     
-                    const yearElement = element.querySelector('.browse-movie-year');
+                    const yearElement = element.querySelector('.browse-movie-year') || 
+                                      element.querySelector('.movie-year') ||
+                                      element.querySelector('[class*="year"]');
                     if (yearElement) {
                         year = yearElement.textContent.trim();
                     }
                     
-                    const ratingElement = element.querySelector('.rating');
+                    const ratingElement = element.querySelector('.rating') ||
+                                        element.querySelector('[class*="rating"]');
                     if (ratingElement) {
                         rating = ratingElement.textContent.trim();
                     }
                     
-                    if (title && title.length > 3) {
-                        results.push({
-                            title: `${title} (${year}) - ${rating}`,
-                            magnet: magnet,
-                            size: 'N/A',
-                            files: 'N/A',
-                            age: year,
-                            fileDetails: [],
-                            source: 'YTS'
-                        });
-                    }
+                    results.push({
+                        title: `${title} (${year}) - ${rating}`,
+                        magnet: magnet,
+                        size: 'N/A',
+                        files: 'N/A',
+                        age: year,
+                        fileDetails: [],
+                        source: 'YTS'
+                    });
                 } catch (error) {
-                    // Erro silencioso ao processar elemento
+                    console.log('YTS parse error:', error);
                 }
             });
             
+            console.log('YTS results:', results.length);
             return results.slice(0, 8); // Limitar a 8 resultados
         }
         
@@ -1245,16 +1180,43 @@
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             
-            // Procurar por elementos de resultado do Pirate Bay
-            const resultElements = doc.querySelectorAll('#searchResult tbody tr');
+            // Debug: verificar se há conteúdo
+            console.log('Pirate Bay HTML length:', html.length);
+            console.log('Pirate Bay HTML preview:', html.substring(0, 500));
+            
+            // Procurar por elementos de resultado do Pirate Bay - tentar múltiplos seletores
+            let resultElements = doc.querySelectorAll('#searchResult tbody tr');
+            if (resultElements.length === 0) {
+                resultElements = doc.querySelectorAll('table tr');
+            }
+            if (resultElements.length === 0) {
+                resultElements = doc.querySelectorAll('tr');
+            }
+            
+            console.log('Pirate Bay result elements found:', resultElements.length);
             
             resultElements.forEach((element, index) => {
                 try {
-                    const titleLink = element.querySelector('td:nth-child(2) a');
+                    // Tentar múltiplos seletores para o título
+                    let titleLink = element.querySelector('td:nth-child(2) a');
+                    if (!titleLink) {
+                        titleLink = element.querySelector('td a[href*="/torrent/"]');
+                    }
+                    if (!titleLink) {
+                        titleLink = element.querySelector('td a');
+                    }
+                    
                     if (!titleLink) return;
                     
                     const title = titleLink.textContent.trim();
-                    const magnetLink = element.querySelector('a[href^="magnet:"]');
+                    if (!title || title.length < 3) return;
+                    
+                    // Tentar múltiplos seletores para o magnet
+                    let magnetLink = element.querySelector('a[href^="magnet:"]');
+                    if (!magnetLink) {
+                        magnetLink = element.querySelector('a[href*="magnet:"]');
+                    }
+                    
                     if (!magnetLink) return;
                     
                     const magnet = magnetLink.href;
@@ -1263,32 +1225,33 @@
                     let size = 'N/A';
                     let age = 'N/A';
                     
-                    const sizeElement = element.querySelector('td:nth-child(3)');
+                    const sizeElement = element.querySelector('td:nth-child(3)') ||
+                                      element.querySelector('td[class*="size"]');
                     if (sizeElement) {
                         size = sizeElement.textContent.trim();
                     }
                     
-                    const ageElement = element.querySelector('td:nth-child(4)');
+                    const ageElement = element.querySelector('td:nth-child(4)') ||
+                                     element.querySelector('td[class*="date"]');
                     if (ageElement) {
                         age = ageElement.textContent.trim();
                     }
                     
-                    if (title && magnet && title.length > 3) {
-                        results.push({
-                            title: title,
-                            magnet: magnet,
-                            size: size,
-                            files: 'N/A',
-                            age: age,
-                            fileDetails: [],
-                            source: 'Pirate Bay'
-                        });
-                    }
+                    results.push({
+                        title: title,
+                        magnet: magnet,
+                        size: size,
+                        files: 'N/A',
+                        age: age,
+                        fileDetails: [],
+                        source: 'Pirate Bay'
+                    });
                 } catch (error) {
-                    // Erro silencioso ao processar elemento
+                    console.log('Pirate Bay parse error:', error);
                 }
             });
             
+            console.log('Pirate Bay results:', results.length);
             return results.slice(0, 10); // Limitar a 10 resultados
         }
         

@@ -245,6 +245,10 @@
                     >
                     <button onclick="loadVideo()" aria-label="Reproduzir vídeo">▶️ Assistir</button>
                 </div>
+                <div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 4px; font-size: 12px; color: #1976d2;">
+                    <strong>💡 Dica:</strong> Se o torrent não carregar, pode ser que não tenha seeders ativos. 
+                    Tente buscar por outros torrents ou aguarde alguns minutos.
+                </div>
             </div>
         </section>
         
@@ -358,11 +362,33 @@
                         }, 4000);
                     },
                     error: function(error) {
-                        showStatus(`❌ Erro ao carregar vídeo: ${error.message || 'Erro desconhecido'}`, 'error');
                         console.error('Erro Webtor:', error);
+                        
+                        // Tratar diferentes tipos de erro
+                        let errorMessage = 'Erro desconhecido';
+                        let suggestions = '';
+                        
+                        if (error.message && error.message.includes('deadline exceeded')) {
+                            errorMessage = 'Timeout ao conectar com peers';
+                            suggestions = '💡 Dicas: Tente outro magnet link ou aguarde alguns minutos';
+                        } else if (error.message && error.message.includes('magnetize')) {
+                            errorMessage = 'Não foi possível encontrar peers para este torrent';
+                            suggestions = '💡 Dicas: Torrent pode estar sem seeders ativos';
+                        } else if (error.message && error.message.includes('not found')) {
+                            errorMessage = 'Torrent não encontrado';
+                            suggestions = '💡 Dicas: Verifique se o magnet link está correto';
+                        } else {
+                            errorMessage = error.message || 'Erro ao carregar vídeo';
+                            suggestions = '💡 Dicas: Tente recarregar a página ou usar outro magnet link';
+                        }
+                        
+                        showStatus(`❌ ${errorMessage}<br><small>${suggestions}</small><br><button onclick="loadVideo()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">🔄 Tentar Novamente</button>`, 'error');
                     },
                     loading: function() {
                         showStatus('⏳ Conectando ao torrent...', 'success');
+                    },
+                    magnetizing: function() {
+                        showStatus('🔄 Procurando peers... Isso pode levar alguns minutos', 'success');
                     },
                     playing: function() {
                         showStatus('▶️ Reproduzindo...', 'success');

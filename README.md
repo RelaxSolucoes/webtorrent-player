@@ -6,6 +6,8 @@
 
 **[Acesse aqui](https://relaxsolucoes.github.io/webtorrent-player/)**
 
+> 🎬 **WebTorrent Player** - Streaming P2P gratuito e sem registro
+
 ## ✨ Características
 
 - 🚀 **Streaming P2P** - Assista torrents diretamente no navegador

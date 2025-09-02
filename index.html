@@ -269,7 +269,7 @@
         <section aria-label="Reprodução de Magnet Link">
             <div style="margin-bottom: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
                 <h2>📋 ou cole seu link torrent</h2>
-                <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Cole um magnet link para assistir diretamente</p>
+                <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Cole um magnet link ou anexe um arquivo .torrent</p>
                 <div class="input-group">
                     <label for="magnet" class="sr-only">Magnet link do torrent</label>
                     <input 
@@ -280,6 +280,23 @@
                         aria-label="Campo para magnet link"
                     >
                     <button onclick="loadVideo()" aria-label="Reproduzir vídeo">▶️ Assistir</button>
+                </div>
+                
+                <!-- Upload de arquivo torrent -->
+                <div style="margin-top: 15px; padding: 15px; background: #e8f5e8; border: 2px dashed #4caf50; border-radius: 8px; text-align: center;">
+                    <p style="margin: 0 0 10px 0; color: #2e7d32; font-size: 14px; font-weight: bold;">
+                        📁 Ou anexe um arquivo .torrent
+                    </p>
+                    <input 
+                        type="file" 
+                        id="torrentFile" 
+                        accept=".torrent"
+                        style="margin-bottom: 10px;"
+                        onchange="handleTorrentFile(this)"
+                    >
+                    <p style="margin: 0; color: #666; font-size: 12px;">
+                        Arraste e solte ou clique para selecionar
+                    </p>
                 </div>
                 
 
@@ -379,6 +396,11 @@
                 return;
             }
             
+            loadTorrentFromMagnet(magnet);
+        }
+        
+        function loadTorrentFromMagnet(magnet) {
+            
             // Limpar player anterior
             document.getElementById('player').innerHTML = '';
             
@@ -436,6 +458,79 @@
                     }
                 }
             });
+        }
+        
+        function handleTorrentFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            if (!file.name.toLowerCase().endsWith('.torrent')) {
+                showStatus('❌ Por favor, selecione um arquivo .torrent válido!', 'error');
+                return;
+            }
+            
+            // Criar URL do arquivo
+            const torrentUrl = URL.createObjectURL(file);
+            
+            // Limpar player anterior
+            document.getElementById('player').innerHTML = '';
+            
+            // Configuração do Webtor para arquivo torrent
+            window.webtor = window.webtor || [];
+            window.webtor.push({
+                id: 'webtor-player',
+                torrentUrl: torrentUrl,
+                width: '100%',
+                height: '500px',
+                lang: 'pt',
+                features: {
+                    subtitles: true,
+                    settings: true,
+                    fullscreen: true,
+                    playpause: true,
+                    timeline: true,
+                    volume: true,
+                    chromecast: true,
+                    embed: false
+                },
+                on: {
+                    ready: function() {
+                        showStatus('✅ Player pronto! Clique em play para assistir', 'success');
+                    },
+                    error: function(error) {
+                        let errorMessage = 'Erro ao carregar vídeo';
+                        let suggestions = '💡 Dicas: Verifique se o arquivo .torrent é válido';
+                        
+                        if (error.message && error.message.includes('deadline exceeded')) {
+                            errorMessage = 'Timeout ao conectar com peers';
+                        } else if (error.message && error.message.includes('magnetize')) {
+                            errorMessage = 'Não foi possível encontrar peers para este torrent';
+                        } else if (error.message && error.message.includes('not found')) {
+                            errorMessage = 'Torrent não encontrado';
+                        } else if (error.message && error.message.includes('no video')) {
+                            errorMessage = 'Nenhum arquivo de vídeo encontrado no torrent';
+                        }
+                        
+                        showStatus(`❌ ${errorMessage}<br><small>${suggestions}</small><br><button onclick="handleTorrentFile(document.getElementById('torrentFile'))" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">🔄 Tentar Novamente</button>`, 'error');
+                    },
+                    playing: function() {
+                        showStatus('▶️ Reproduzindo!', 'success');
+                    }
+                }
+            });
+            
+            // Criar div do player
+            const playerDiv = document.createElement('div');
+            playerDiv.id = 'webtor-player';
+            playerDiv.className = 'webtor';
+            playerDiv.style.width = '100%';
+            playerDiv.style.height = '500px';
+            playerDiv.style.border = '2px solid #ddd';
+            playerDiv.style.borderRadius = '8px';
+            
+            document.getElementById('player').appendChild(playerDiv);
+            
+            showStatus('📁 Carregando arquivo .torrent...', 'info');
         }
         
         function showProgressIndicator(message, type = 'info', duration = null) {

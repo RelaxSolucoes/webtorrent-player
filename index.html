@@ -249,6 +249,19 @@
                     <button onclick="searchTorrents()" aria-label="Buscar torrents">🔍 Buscar</button>
                 </div>
                 <div id="searchResults" style="margin-top: 15px;" role="region" aria-label="Resultados da busca"></div>
+                
+                <!-- Link para Ext.to -->
+                <div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 6px; text-align: center;">
+                    <p style="margin: 0 0 8px 0; font-size: 13px; color: #1976d2;">
+                        <strong>💡 Quer mais resultados?</strong>
+                    </p>
+                    <a href="https://ext.to/" target="_blank" style="display: inline-block; padding: 8px 16px; background: #1976d2; color: white; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: bold;">
+                        🔍 Buscar no Ext.to
+                    </a>
+                    <p style="margin: 8px 0 0 0; font-size: 11px; color: #666;">
+                        Copie o magnet link lá e cole aqui para assistir
+                    </p>
+                </div>
             </div>
         </section>
         
@@ -649,47 +662,17 @@
                 return;
             }
             
-            showStatus('🔍 Buscando torrents em múltiplas fontes...', 'loading');
+            showStatus('🔍 Buscando torrents no BTDigg...', 'loading');
             
             try {
-                // Tentar múltiplas fontes de busca
-                const searchPromises = [
-                    searchBTDiggAPI(query),
-                    searchExtToAPI(query),
-                    search1337xAPI(query),
-                    searchYTSAPI(query),
-                    searchPirateBayAPI(query)
-                ];
+                // Buscar apenas no BTDigg
+                const results = await searchBTDiggAPI(query);
                 
-                // Aguardar todas as buscas (com timeout)
-                const results = await Promise.allSettled(searchPromises);
-                
-                // Combinar resultados de todas as fontes
-                let allResults = [];
-                let successfulSearches = 0;
-                
-                results.forEach((result, index) => {
-                    const sourceNames = ['BTDigg', 'Ext.to', '1337x', 'YTS', 'Pirate Bay'];
-                    const sourceName = sourceNames[index] || `Source ${index}`;
-                    
-                    if (result.status === 'fulfilled' && result.value.length > 0) {
-                        allResults = allResults.concat(result.value);
-                        successfulSearches++;
-                        console.log(`✅ ${sourceName}: ${result.value.length} resultados encontrados`);
-                    } else if (result.status === 'rejected') {
-                        console.log(`❌ ${sourceName}: Erro - ${result.reason}`);
-                    } else {
-                        console.log(`⚠️ ${sourceName}: Nenhum resultado encontrado`);
-                    }
-                });
-                
-                if (allResults.length > 0) {
-                    // Remover duplicatas baseado no hash
-                    const uniqueResults = removeDuplicateTorrents(allResults);
-                    displaySearchResults(uniqueResults);
-                    showStatus(`✅ Encontrados ${uniqueResults.length} resultados de ${successfulSearches} fontes (BTDigg, Ext.to, 1337x, YTS, Pirate Bay)!`, 'success');
+                if (results.length > 0) {
+                    displaySearchResults(results);
+                    showStatus(`✅ Encontrados ${results.length} resultados no BTDigg!`, 'success');
                 } else {
-                    showStatus('❌ Nenhum resultado encontrado em nenhuma fonte. Tente outros termos de busca.', 'error');
+                    showStatus('❌ Nenhum resultado encontrado no BTDigg. Tente outros termos de busca.', 'error');
                     document.getElementById('searchResults').innerHTML = '<p>Nenhum resultado encontrado para sua busca.</p>';
                 }
                 
@@ -726,133 +709,7 @@
             }
         }
         
-        async function searchExtToAPI(query) {
-            // Ext.to - site confiável para torrents
-            const endpoint = `https://ext.to/browse/?q=${encodeURIComponent(query)}&with_adult=1`;
-            const proxy = 'https://corsproxy.io/?';
-            
-            try {
-                const response = await fetch(proxy + encodeURIComponent(endpoint), {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                        'Referer': 'https://ext.to/',
-                        'Origin': 'https://ext.to'
-                    }
-                });
-                
-                if (!response.ok) {
-                    console.log(`Ext.to HTTP ${response.status}: ${response.statusText}`);
-                    throw new Error(`HTTP ${response.status}`);
-                }
-                
-                const html = await response.text();
-                const results = parseExtToResults(html);
-                
-                return results;
-                
-            } catch (error) {
-                console.log('Ext.to error:', error.message);
-                return [];
-            }
-        }
-        
-        async function search1337xAPI(query) {
-            // 1337x.to - site popular para torrents
-            const endpoint = `https://f1337x.to/search/${encodeURIComponent(query)}/1/`;
-            const proxy = 'https://corsproxy.io/?';
-            
-            try {
-                const response = await fetch(proxy + encodeURIComponent(endpoint), {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                        'Referer': 'https://f1337x.to/',
-                        'Origin': 'https://f1337x.to'
-                    }
-                });
-                
-                if (!response.ok) {
-                    console.log(`1337x HTTP ${response.status}: ${response.statusText}`);
-                    throw new Error(`HTTP ${response.status}`);
-                }
-                
-                const html = await response.text();
-                const results = parse1337xResults(html);
-                
-                return results;
-                
-            } catch (error) {
-                console.log('1337x error:', error.message);
-                return [];
-            }
-        }
-        
-        async function searchYTSAPI(query) {
-            // YTS.mx - especializado em filmes de alta qualidade
-            const endpoint = `https://yts.mx/browse-movies/${encodeURIComponent(query)}/all/all/0/latest`;
-            const proxy = 'https://corsproxy.io/?';
-            
-            try {
-                const response = await fetch(proxy + encodeURIComponent(endpoint), {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                        'Referer': 'https://yts.mx/',
-                        'Origin': 'https://yts.mx'
-                    }
-                });
-                
-                if (!response.ok) {
-                    console.log(`YTS HTTP ${response.status}: ${response.statusText}`);
-                    throw new Error(`HTTP ${response.status}`);
-                }
-                
-                const html = await response.text();
-                const results = parseYTSResults(html);
-                
-                return results;
-                
-            } catch (error) {
-                console.log('YTS error:', error.message);
-                return [];
-            }
-        }
-        
-        async function searchPirateBayAPI(query) {
-            // The Pirate Bay - o mais famoso site de torrents
-            const endpoint = `https://thepiratebay.org/search/${encodeURIComponent(query)}/0/99/0`;
-            const proxy = 'https://corsproxy.io/?';
-            
-            try {
-                const response = await fetch(proxy + encodeURIComponent(endpoint), {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                        'Referer': 'https://thepiratebay.org/',
-                        'Origin': 'https://thepiratebay.org'
-                    }
-                });
-                
-                if (!response.ok) {
-                    console.log(`Pirate Bay HTTP ${response.status}: ${response.statusText}`);
-                    throw new Error(`HTTP ${response.status}`);
-                }
-                
-                const html = await response.text();
-                const results = parsePirateBayResults(html);
-                
-                return results;
-                
-            } catch (error) {
-                console.log('Pirate Bay error:', error.message);
-                return [];
-            }
-        }
+
         
         function parseBTDiggResults(html) {
             const results = [];
@@ -987,304 +844,7 @@
             return results.slice(0, 15); // Limitar a 15 resultados
         }
         
-        function parseExtToResults(html) {
-            const results = [];
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            
-            // Procurar por elementos de resultado do Ext.to
-            const resultElements = doc.querySelectorAll('.table-list tbody tr');
-            
-            resultElements.forEach((element, index) => {
-                try {
-                    const titleLink = element.querySelector('td:nth-child(2) a');
-                    if (!titleLink) return;
-                    
-                    const title = titleLink.textContent.trim();
-                    const magnetLink = element.querySelector('a[href^="magnet:"]');
-                    if (!magnetLink) return;
-                    
-                    const magnet = magnetLink.href;
-                    
-                    // Extrair informações adicionais
-                    let size = 'N/A';
-                    let age = 'N/A';
-                    
-                    const sizeElement = element.querySelector('td:nth-child(3)');
-                    if (sizeElement) {
-                        size = sizeElement.textContent.trim();
-                    }
-                    
-                    const ageElement = element.querySelector('td:nth-child(4)');
-                    if (ageElement) {
-                        age = ageElement.textContent.trim();
-                    }
-                    
-                    if (title && magnet && title.length > 3) {
-                        results.push({
-                            title: title,
-                            magnet: magnet,
-                            size: size,
-                            files: 'N/A',
-                            age: age,
-                            fileDetails: [],
-                            source: 'Ext.to'
-                        });
-                    }
-                } catch (error) {
-                    // Erro silencioso ao processar elemento
-                }
-            });
-            
-            return results.slice(0, 10); // Limitar a 10 resultados
-        }
-        
-        function parse1337xResults(html) {
-            const results = [];
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            
-            // Procurar por elementos de resultado do 1337x
-            const resultElements = doc.querySelectorAll('.table-list tbody tr');
-            
-            resultElements.forEach((element, index) => {
-                try {
-                    const titleLink = element.querySelector('td:nth-child(1) a');
-                    if (!titleLink) return;
-                    
-                    const title = titleLink.textContent.trim();
-                    const magnetLink = element.querySelector('a[href^="magnet:"]');
-                    if (!magnetLink) return;
-                    
-                    const magnet = magnetLink.href;
-                    
-                    // Extrair informações adicionais
-                    let size = 'N/A';
-                    let age = 'N/A';
-                    
-                    const sizeElement = element.querySelector('td:nth-child(4)');
-                    if (sizeElement) {
-                        size = sizeElement.textContent.trim();
-                    }
-                    
-                    const ageElement = element.querySelector('td:nth-child(5)');
-                    if (ageElement) {
-                        age = ageElement.textContent.trim();
-                    }
-                    
-                    if (title && magnet && title.length > 3) {
-                        results.push({
-                            title: title,
-                            magnet: magnet,
-                            size: size,
-                            files: 'N/A',
-                            age: age,
-                            fileDetails: [],
-                            source: '1337x'
-                        });
-                    }
-                } catch (error) {
-                    // Erro silencioso ao processar elemento
-                }
-            });
-            
-            return results.slice(0, 10); // Limitar a 10 resultados
-        }
-        
-        function parseYTSResults(html) {
-            const results = [];
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            
-            // Debug: verificar se há conteúdo
-            console.log('YTS HTML length:', html.length);
-            console.log('YTS HTML preview:', html.substring(0, 500));
-            
-            // Procurar por elementos de resultado do YTS - tentar múltiplos seletores
-            let resultElements = doc.querySelectorAll('.browse-movie-wrap');
-            if (resultElements.length === 0) {
-                resultElements = doc.querySelectorAll('.movie-list .movie');
-            }
-            if (resultElements.length === 0) {
-                resultElements = doc.querySelectorAll('.movie');
-            }
-            if (resultElements.length === 0) {
-                resultElements = doc.querySelectorAll('[class*="movie"]');
-            }
-            if (resultElements.length === 0) {
-                resultElements = doc.querySelectorAll('div[class*="browse"]');
-            }
-            if (resultElements.length === 0) {
-                resultElements = doc.querySelectorAll('div[class*="movie"]');
-            }
-            if (resultElements.length === 0) {
-                resultElements = doc.querySelectorAll('a[href*="/movies/"]');
-            }
-            
-            console.log('YTS result elements found:', resultElements.length);
-            
-            resultElements.forEach((element, index) => {
-                try {
-                    // Se o elemento já é um link, usar diretamente
-                    let titleLink = element;
-                    let title = '';
-                    
-                    if (element.tagName === 'A') {
-                        titleLink = element;
-                        title = element.textContent.trim();
-                    } else {
-                        // Tentar múltiplos seletores para o título
-                        titleLink = element.querySelector('.browse-movie-title a') ||
-                                  element.querySelector('.movie-title a') ||
-                                  element.querySelector('a[href*="/movies/"]') ||
-                                  element.querySelector('a');
-                        
-                        if (titleLink) {
-                            title = titleLink.textContent.trim();
-                        }
-                    }
-                    
-                    if (!titleLink || !title || title.length < 3) return;
-                    
-                    // YTS não tem magnet direto, mas podemos criar um link para a página do filme
-                    const movieLink = titleLink.href;
-                    if (!movieLink) return;
-                    
-                    // Para YTS, vamos usar um magnet genérico baseado no título
-                    const magnet = `magnet:?xt=urn:btih:${btoa(title).substring(0, 40)}&dn=${encodeURIComponent(title)}`;
-                    
-                    // Extrair informações adicionais
-                    let year = 'N/A';
-                    let rating = 'N/A';
-                    
-                    const yearElement = element.querySelector('.browse-movie-year') || 
-                                      element.querySelector('.movie-year') ||
-                                      element.querySelector('[class*="year"]');
-                    if (yearElement) {
-                        year = yearElement.textContent.trim();
-                    }
-                    
-                    const ratingElement = element.querySelector('.rating') ||
-                                        element.querySelector('[class*="rating"]');
-                    if (ratingElement) {
-                        rating = ratingElement.textContent.trim();
-                    }
-                    
-                    results.push({
-                        title: `${title} (${year}) - ${rating}`,
-                        magnet: magnet,
-                        size: 'N/A',
-                        files: 'N/A',
-                        age: year,
-                        fileDetails: [],
-                        source: 'YTS'
-                    });
-                } catch (error) {
-                    console.log('YTS parse error:', error);
-                }
-            });
-            
-            console.log('YTS results:', results.length);
-            return results.slice(0, 8); // Limitar a 8 resultados
-        }
-        
-        function parsePirateBayResults(html) {
-            const results = [];
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            
-            // Debug: verificar se há conteúdo
-            console.log('Pirate Bay HTML length:', html.length);
-            console.log('Pirate Bay HTML preview:', html.substring(0, 500));
-            
-            // Procurar por elementos de resultado do Pirate Bay - tentar múltiplos seletores
-            let resultElements = doc.querySelectorAll('#searchResult tbody tr');
-            if (resultElements.length === 0) {
-                resultElements = doc.querySelectorAll('table tr');
-            }
-            if (resultElements.length === 0) {
-                resultElements = doc.querySelectorAll('tr');
-            }
-            if (resultElements.length === 0) {
-                resultElements = doc.querySelectorAll('div[class*="torrent"]');
-            }
-            if (resultElements.length === 0) {
-                resultElements = doc.querySelectorAll('div[class*="result"]');
-            }
-            if (resultElements.length === 0) {
-                resultElements = doc.querySelectorAll('a[href*="magnet:"]');
-            }
-            
-            console.log('Pirate Bay result elements found:', resultElements.length);
-            
-            resultElements.forEach((element, index) => {
-                try {
-                    let titleLink = null;
-                    let title = '';
-                    let magnet = '';
-                    
-                    // Se o elemento já é um link magnet, usar diretamente
-                    if (element.tagName === 'A' && element.href.startsWith('magnet:')) {
-                        magnet = element.href;
-                        title = element.textContent.trim() || 'Torrent do Pirate Bay';
-                    } else {
-                        // Tentar múltiplos seletores para o título
-                        titleLink = element.querySelector('td:nth-child(2) a') ||
-                                  element.querySelector('td a[href*="/torrent/"]') ||
-                                  element.querySelector('td a') ||
-                                  element.querySelector('a[href*="/torrent/"]') ||
-                                  element.querySelector('a');
-                        
-                        if (titleLink) {
-                            title = titleLink.textContent.trim();
-                        }
-                        
-                        // Tentar múltiplos seletores para o magnet
-                        let magnetLink = element.querySelector('a[href^="magnet:"]') ||
-                                       element.querySelector('a[href*="magnet:"]');
-                        
-                        if (magnetLink) {
-                            magnet = magnetLink.href;
-                        }
-                    }
-                    
-                    if (!title || title.length < 3 || !magnet) return;
-                    
-                    // Extrair informações adicionais
-                    let size = 'N/A';
-                    let age = 'N/A';
-                    
-                    const sizeElement = element.querySelector('td:nth-child(3)') ||
-                                      element.querySelector('td[class*="size"]') ||
-                                      element.querySelector('[class*="size"]');
-                    if (sizeElement) {
-                        size = sizeElement.textContent.trim();
-                    }
-                    
-                    const ageElement = element.querySelector('td:nth-child(4)') ||
-                                     element.querySelector('td[class*="date"]') ||
-                                     element.querySelector('[class*="date"]');
-                    if (ageElement) {
-                        age = ageElement.textContent.trim();
-                    }
-                    
-                    results.push({
-                        title: title,
-                        magnet: magnet,
-                        size: size,
-                        files: 'N/A',
-                        age: age,
-                        fileDetails: [],
-                        source: 'Pirate Bay'
-                    });
-                } catch (error) {
-                    console.log('Pirate Bay parse error:', error);
-                }
-            });
-            
-            console.log('Pirate Bay results:', results.length);
-            return results.slice(0, 10); // Limitar a 10 resultados
-        }
+
         
         function removeDuplicateTorrents(results) {
             const seen = new Set();

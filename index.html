@@ -382,11 +382,7 @@
             // Limpar player anterior
             document.getElementById('player').innerHTML = '';
             
-            // Mostrar indicador de progresso inteligente
-            showProgressIndicator('🔍 Verificando magnet...', 'info');
-            
-            // Usar a forma "Advanced usage" da documentação oficial
-            // Criar div com id para o player
+            // Configuração simplificada baseada na documentação oficial do Webtor.io
             const playerDiv = document.createElement('div');
             playerDiv.id = 'webtor-player';
             playerDiv.className = 'webtor';
@@ -397,161 +393,49 @@
             
             document.getElementById('player').appendChild(playerDiv);
             
-            // Usar configurações padrão
-            const posterUrl = '';
-            const imdbId = '';
-            const playerLang = 'pt';
-            const subtitles = [];
-            const features = {
-                subtitles: true,
-                settings: true,
-                fullscreen: true,
-                playpause: true,
-                timeline: true,
-                volume: true,
-                chromecast: true,
-                embed: false
-            };
-            
-            // Variáveis para controle de estado
-            let playerReady = false;
-            let playerPlaying = false;
-            let playerError = false;
-            
-            // Configurar Webtor conforme documentação oficial com todas as opções
+            // Configuração do Webtor conforme documentação oficial
             window.webtor = window.webtor || [];
-            const webtorConfig = {
+            window.webtor.push({
                 id: 'webtor-player',
                 magnet: magnet,
                 width: '100%',
                 height: '500px',
-                lang: playerLang,
-                features: features,
+                lang: 'pt',
+                features: {
+                    subtitles: true,
+                    settings: true,
+                    fullscreen: true,
+                    playpause: true,
+                    timeline: true,
+                    volume: true,
+                    chromecast: true,
+                    embed: false
+                },
                 on: {
                     ready: function() {
-                        playerReady = true;
-                        hideProgressIndicator();
-                        showProgressIndicator('✅ Player pronto! Clique em play para assistir', 'success', 3000);
+                        showStatus('✅ Player pronto! Clique em play para assistir', 'success');
                     },
                     error: function(error) {
-                        playerError = true;
-                        hideProgressIndicator();
-                        // Tratar diferentes tipos de erro
-                        let errorMessage = 'Erro desconhecido';
-                        let suggestions = '';
+                        let errorMessage = 'Erro ao carregar vídeo';
+                        let suggestions = '💡 Dicas: Tente outro magnet link ou aguarde alguns minutos';
                         
                         if (error.message && error.message.includes('deadline exceeded')) {
                             errorMessage = 'Timeout ao conectar com peers';
-                            suggestions = '💡 Dicas: Tente outro magnet link ou aguarde alguns minutos';
                         } else if (error.message && error.message.includes('magnetize')) {
                             errorMessage = 'Não foi possível encontrar peers para este torrent';
-                            suggestions = '💡 Dicas: Torrent pode estar sem seeders ativos';
                         } else if (error.message && error.message.includes('not found')) {
                             errorMessage = 'Torrent não encontrado';
-                            suggestions = '💡 Dicas: Verifique se o magnet link está correto';
                         } else if (error.message && error.message.includes('no video')) {
                             errorMessage = 'Nenhum arquivo de vídeo encontrado no torrent';
-                            suggestions = '💡 Dicas: Este torrent pode conter apenas arquivos de áudio ou outros tipos';
-                        } else {
-                            errorMessage = error.message || 'Erro ao carregar vídeo';
-                            suggestions = '💡 Dicas: Tente recarregar a página ou usar outro magnet link';
                         }
                         
                         showStatus(`❌ ${errorMessage}<br><small>${suggestions}</small><br><button onclick="loadVideo()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">🔄 Tentar Novamente</button>`, 'error');
                     },
-                    loading: function() {
-                        showProgressIndicator('⏳ Conectando ao torrent...', 'info');
-                    },
-                    magnetizing: function() {
-                        showProgressIndicator('🔄 Procurando peers... Isso pode levar alguns minutos', 'info');
-                    },
                     playing: function() {
-                        playerPlaying = true;
-                        hideProgressIndicator();
-                        showProgressIndicator('▶️ Reproduzindo!', 'success', 2000);
-                    },
-                    torrent: function(torrent) {
-                        showProgressIndicator('📁 Torrent carregado, buscando stream...', 'info');
-                    },
-                    stream: function(stream) {
-                        showProgressIndicator('🎬 Stream encontrado, inicializando player...', 'info');
+                        showStatus('▶️ Reproduzindo!', 'success');
                     }
                 }
-            };
-            
-            // Adicionar configurações opcionais se fornecidas
-            if (posterUrl) {
-                webtorConfig.poster = posterUrl;
-            }
-            
-            if (imdbId) {
-                webtorConfig.imdbId = imdbId;
-            }
-            
-            if (subtitles.length > 0) {
-                webtorConfig.subtitles = subtitles;
-            }
-            
-            // Sistema de monitoramento simples do player
-            let playerCheckInterval = null;
-            
-            // Função para verificar o estado do player
-            const checkPlayerState = () => {
-                // Verificar se o player está realmente funcionando
-                const playerElement = document.getElementById('webtor-player');
-                if (playerElement) {
-                    // Verificar se há um elemento video dentro do player
-                    const videoElement = playerElement.querySelector('video');
-                    if (videoElement) {
-                        // Se o vídeo está carregando ou pode reproduzir, considerar sucesso
-                        if (videoElement.readyState >= 2 || videoElement.readyState === 1) {
-                            playerReady = true;
-                            clearInterval(playerCheckInterval);
-                            hideProgressIndicator();
-                            showProgressIndicator('✅ Player carregado com sucesso!', 'success', 3000);
-                            return;
-                        }
-                        
-                        // Se o vídeo está reproduzindo, considerar sucesso
-                        if (!videoElement.paused && !videoElement.ended) {
-                            playerPlaying = true;
-                            clearInterval(playerCheckInterval);
-                            hideProgressIndicator();
-                            showProgressIndicator('▶️ Vídeo reproduzindo!', 'success', 2000);
-                            return;
-                        }
-                    }
-                }
-            };
-            
-            // Iniciar monitoramento do player por 10 segundos apenas
-            playerCheckInterval = setInterval(checkPlayerState, 500);
-            setTimeout(() => {
-                clearInterval(playerCheckInterval);
-            }, 10000); // Para o monitoramento após 10 segundos
-            
-            // Limpar intervalo quando o player carregar com sucesso
-            const originalReady = webtorConfig.on.ready;
-            webtorConfig.on.ready = function() {
-                clearInterval(playerCheckInterval);
-                originalReady();
-            };
-            
-            // Limpar intervalo quando começar a reproduzir
-            const originalPlaying = webtorConfig.on.playing;
-            webtorConfig.on.playing = function() {
-                clearInterval(playerCheckInterval);
-                originalPlaying();
-            };
-            
-            // Limpar intervalo em caso de erro
-            const originalError = webtorConfig.on.error;
-            webtorConfig.on.error = function(error) {
-                clearInterval(playerCheckInterval);
-                originalError(error);
-            };
-            
-            window.webtor.push(webtorConfig);
+            });
         }
         
         function showProgressIndicator(message, type = 'info', duration = null) {

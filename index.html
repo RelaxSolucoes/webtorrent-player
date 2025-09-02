@@ -245,6 +245,153 @@
                     >
                     <button onclick="loadVideo()" aria-label="Reproduzir vídeo">▶️ Assistir</button>
                 </div>
+                
+                <!-- Opções Avançadas -->
+                <div style="margin-top: 15px;">
+                    <button onclick="toggleAdvancedOptions()" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                        ⚙️ Opções Avançadas
+                    </button>
+                </div>
+                
+                <div id="advancedOptions" style="display: none; margin-top: 15px; padding: 15px; background: #fff; border: 1px solid #dee2e6; border-radius: 6px;">
+                    <h4 style="margin: 0 0 15px 0; color: #495057; font-size: 14px;">🎛️ Configurações Avançadas</h4>
+                    
+                    <!-- Poster Image -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="posterUrl" style="display: block; margin-bottom: 5px; font-size: 12px; font-weight: bold; color: #495057;">🖼️ Poster/Thumbnail (URL):</label>
+                        <input 
+                            type="url" 
+                            id="posterUrl" 
+                            placeholder="https://exemplo.com/poster.jpg"
+                            style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 12px;"
+                        >
+                        <small style="color: #6c757d; font-size: 11px;">Imagem que aparece antes do vídeo carregar</small>
+                    </div>
+                    
+                    <!-- IMDB ID -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="imdbId" style="display: block; margin-bottom: 5px; font-size: 12px; font-weight: bold; color: #495057;">🎬 IMDB ID:</label>
+                        <input 
+                            type="text" 
+                            id="imdbId" 
+                            placeholder="tt0133093 (opcional)"
+                            style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 12px;"
+                        >
+                        <small style="color: #6c757d; font-size: 11px;">Para metadados automáticos e subtítulos</small>
+                    </div>
+                    
+                    <!-- Subtítulos -->
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-size: 12px; font-weight: bold; color: #495057;">📝 Subtítulos:</label>
+                        <div id="subtitlesContainer">
+                            <div class="subtitle-item" style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                                <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+                                    <input type="text" placeholder="Código (pt, en, es)" style="flex: 1; padding: 6px; border: 1px solid #ced4da; border-radius: 3px; font-size: 11px;">
+                                    <input type="text" placeholder="Rótulo (Português)" style="flex: 1; padding: 6px; border: 1px solid #ced4da; border-radius: 3px; font-size: 11px;">
+                                    <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
+                                        <input type="checkbox" style="margin-right: 5px;"> Padrão
+                                    </label>
+                                </div>
+                                <input type="url" placeholder="URL do arquivo de legenda (.vtt, .srt)" style="width: 100%; padding: 6px; border: 1px solid #ced4da; border-radius: 3px; font-size: 11px;">
+                            </div>
+                        </div>
+                        <button onclick="addSubtitle()" style="padding: 6px 12px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">
+                            ➕ Adicionar Legenda
+                        </button>
+                    </div>
+                    
+                    <!-- Recursos do Player -->
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 8px; font-size: 12px; font-weight: bold; color: #495057;">🎮 Recursos do Player:</label>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                            <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
+                                <input type="checkbox" id="featureSubtitles" checked style="margin-right: 5px;"> Subtítulos
+                            </label>
+                            <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
+                                <input type="checkbox" id="featureSettings" checked style="margin-right: 5px;"> Configurações
+                            </label>
+                            <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
+                                <input type="checkbox" id="featureFullscreen" checked style="margin-right: 5px;"> Tela Cheia
+                            </label>
+                            <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
+                                <input type="checkbox" id="featurePlaypause" checked style="margin-right: 5px;"> Play/Pause
+                            </label>
+                            <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
+                                <input type="checkbox" id="featureTimeline" checked style="margin-right: 5px;"> Timeline
+                            </label>
+                            <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
+                                <input type="checkbox" id="featureVolume" checked style="margin-right: 5px;"> Volume
+                            </label>
+                            <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
+                                <input type="checkbox" id="featureChromecast" style="margin-right: 5px;"> Chromecast
+                            </label>
+                            <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
+                                <input type="checkbox" id="featureEmbed" style="margin-right: 5px;"> Embed
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Idioma -->
+                    <div style="margin-bottom: 15px;">
+                        <label for="playerLang" style="display: block; margin-bottom: 5px; font-size: 12px; font-weight: bold; color: #495057;">🌐 Idioma da Interface:</label>
+                        <select id="playerLang" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 12px;">
+                            <option value="pt">Português</option>
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                            <option value="fr">Français</option>
+                            <option value="de">Deutsch</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Botões de Ação -->
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button onclick="clearAdvancedSettings()" style="flex: 1; padding: 8px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
+                            🗑️ Limpar Configurações
+                        </button>
+                        <button onclick="saveAdvancedSettings()" style="flex: 1; padding: 8px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
+                            💾 Salvar Configurações
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Exemplos Rápidos -->
+                <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px;">
+                    <h4 style="margin: 0 0 10px 0; color: #856404; font-size: 13px;">🚀 Exemplos Rápidos:</h4>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button onclick="loadExample('sintel')" style="padding: 6px 12px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
+                            🎬 Sintel (Demo)
+                        </button>
+                        <button onclick="loadExample('big-buck-bunny')" style="padding: 6px 12px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
+                            🐰 Big Buck Bunny
+                        </button>
+                        <button onclick="loadExample('tears-of-steel')" style="padding: 6px 12px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
+                            🎭 Tears of Steel
+                        </button>
+                    </div>
+                    <small style="color: #856404; font-size: 10px; display: block; margin-top: 8px;">
+                        Estes são torrents de demonstração gratuitos e legais para testar o player
+                    </small>
+                </div>
+                
+                <!-- Diagnóstico e Solução de Problemas -->
+                <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px;">
+                    <h4 style="margin: 0 0 10px 0; color: #856404; font-size: 13px;">🔧 Diagnóstico de Problemas:</h4>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                        <button onclick="diagnoseTorrent()" style="padding: 6px 12px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
+                            🔍 Diagnosticar Torrent
+                        </button>
+                        <button onclick="checkBrowserSupport()" style="padding: 6px 12px; background: #6f42c1; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
+                            🌐 Verificar Navegador
+                        </button>
+                        <button onclick="showTroubleshooting()" style="padding: 6px 12px; background: #fd7e14; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
+                            ❓ Guia de Solução
+                        </button>
+                    </div>
+                    <small style="color: #856404; font-size: 10px; display: block;">
+                        Use estas ferramentas para identificar e resolver problemas de carregamento
+                    </small>
+                </div>
+                
                 <div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 4px; font-size: 12px; color: #1976d2;">
                     <strong>💡 Dica:</strong> Se o torrent não carregar, pode ser que não tenha seeders ativos. 
                     Tente buscar por outros torrents ou aguarde alguns minutos.
@@ -336,24 +483,29 @@
             
             document.getElementById('player').appendChild(playerDiv);
             
-            // Extrair data-path se existir
-            let dataPath = null;
-            if (magnet.includes('data-path=')) {
-                const pathMatch = magnet.match(/data-path="([^"]+)"/);
-                if (pathMatch) {
-                    dataPath = pathMatch[1];
-                }
-            }
+            // Coletar configurações avançadas
+            const posterUrl = document.getElementById('posterUrl').value.trim();
+            const imdbId = document.getElementById('imdbId').value.trim();
+            const playerLang = document.getElementById('playerLang').value;
             
-            // Configurar Webtor conforme documentação oficial
+            // Coletar subtítulos
+            const subtitles = collectSubtitles();
+            
+            // Coletar recursos do player
+            const features = collectPlayerFeatures();
+            
+            // Configurar Webtor conforme documentação oficial com todas as opções
             window.webtor = window.webtor || [];
-            window.webtor.push({
+            const webtorConfig = {
                 id: 'webtor-player',
                 magnet: magnet,
                 width: '100%',
                 height: '500px',
+                lang: playerLang,
+                features: features,
                 on: {
                     ready: function() {
+                        console.log('✅ Webtor: Player pronto');
                         showStatus('✅ Vídeo carregado! Clique em play para assistir', 'success');
                         // Remover status após 4 segundos
                         setTimeout(() => {
@@ -364,7 +516,7 @@
                         }, 4000);
                     },
                     error: function(error) {
-                        console.error('Erro Webtor:', error);
+                        console.error('❌ Erro Webtor:', error);
                         
                         // Tratar diferentes tipos de erro
                         let errorMessage = 'Erro desconhecido';
@@ -379,6 +531,9 @@
                         } else if (error.message && error.message.includes('not found')) {
                             errorMessage = 'Torrent não encontrado';
                             suggestions = '💡 Dicas: Verifique se o magnet link está correto';
+                        } else if (error.message && error.message.includes('no video')) {
+                            errorMessage = 'Nenhum arquivo de vídeo encontrado no torrent';
+                            suggestions = '💡 Dicas: Este torrent pode conter apenas arquivos de áudio ou outros tipos';
                         } else {
                             errorMessage = error.message || 'Erro ao carregar vídeo';
                             suggestions = '💡 Dicas: Tente recarregar a página ou usar outro magnet link';
@@ -387,12 +542,15 @@
                         showStatus(`❌ ${errorMessage}<br><small>${suggestions}</small><br><button onclick="loadVideo()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">🔄 Tentar Novamente</button>`, 'error');
                     },
                     loading: function() {
+                        console.log('⏳ Webtor: Carregando...');
                         showStatus('⏳ Conectando ao torrent...', 'success');
                     },
                     magnetizing: function() {
+                        console.log('🔄 Webtor: Magnetizando...');
                         showStatus('🔄 Procurando peers... Isso pode levar alguns minutos', 'success');
                     },
                     playing: function() {
+                        console.log('▶️ Webtor: Reproduzindo');
                         showStatus('▶️ Reproduzindo...', 'success');
                         // Remover status após 2 segundos
                         setTimeout(() => {
@@ -401,9 +559,620 @@
                                 status.innerHTML = '';
                             }
                         }, 2000);
+                    },
+                    // Adicionar mais callbacks para debug
+                    torrent: function(torrent) {
+                        console.log('📁 Webtor: Torrent carregado:', torrent);
+                        console.log('📁 Arquivos no torrent:', torrent.files.length);
+                        torrent.files.forEach((file, index) => {
+                            console.log(`📄 Arquivo ${index + 1}:`, file.name, `(${file.length} bytes)`);
+                        });
+                        
+                        // Verificar se há arquivos de vídeo
+                        const videoFiles = torrent.files.filter(file => 
+                            file.name.match(/\.(mp4|avi|mkv|webm|mov|m4v)$/i)
+                        );
+                        
+                        if (videoFiles.length === 0) {
+                            console.warn('⚠️ Nenhum arquivo de vídeo encontrado no torrent');
+                            showStatus('⚠️ Nenhum arquivo de vídeo encontrado neste torrent. Verifique se contém arquivos de vídeo válidos.', 'error');
+                        } else {
+                            console.log('🎬 Arquivos de vídeo encontrados:', videoFiles.length);
+                            showStatus(`🎬 ${videoFiles.length} arquivo(s) de vídeo encontrado(s). Carregando...`, 'success');
+                        }
+                    },
+                    stream: function(stream) {
+                        console.log('🎥 Webtor: Stream iniciado:', stream);
+                        showStatus('🎥 Stream de vídeo iniciado!', 'success');
                     }
                 }
+            };
+            
+            // Adicionar configurações opcionais se fornecidas
+            if (posterUrl) {
+                webtorConfig.poster = posterUrl;
+            }
+            
+            if (imdbId) {
+                webtorConfig.imdbId = imdbId;
+            }
+            
+            if (subtitles.length > 0) {
+                webtorConfig.subtitles = subtitles;
+            }
+            
+            // Adicionar timeout para detectar problemas de carregamento
+            const loadingTimeout = setTimeout(() => {
+                const playerElement = document.getElementById('webtor-player');
+                if (playerElement && playerElement.innerHTML.trim() === '') {
+                    console.warn('⚠️ Timeout: Player não carregou após 30 segundos');
+                    showStatus(`
+                        ⚠️ <strong>Problema detectado:</strong> O torrent foi processado mas não carregou o player.<br>
+                        <small>💡 <strong>Possíveis causas:</strong></small><br>
+                        <small>• Torrent não contém arquivos de vídeo suportados</small><br>
+                        <small>• Torrent está sem seeders ativos</small><br>
+                        <small>• Arquivos de vídeo estão corrompidos</small><br>
+                        <small>• Formato de vídeo não suportado pelo navegador</small><br><br>
+                        <button onclick="loadVideo()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">🔄 Tentar Novamente</button>
+                        <button onclick="tryAlternativeMethod()" style="margin-top: 10px; margin-left: 10px; padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">🔧 Método Alternativo</button>
+                    `, 'error');
+                }
+            }, 30000); // 30 segundos
+            
+            // Limpar timeout quando o player carregar com sucesso
+            const originalReady = webtorConfig.on.ready;
+            webtorConfig.on.ready = function() {
+                clearTimeout(loadingTimeout);
+                originalReady();
+            };
+            
+            // Limpar timeout em caso de erro
+            const originalError = webtorConfig.on.error;
+            webtorConfig.on.error = function(error) {
+                clearTimeout(loadingTimeout);
+                originalError(error);
+            };
+            
+            window.webtor.push(webtorConfig);
+        }
+        
+        // Função para coletar subtítulos
+        function collectSubtitles() {
+            const subtitles = [];
+            const subtitleItems = document.querySelectorAll('.subtitle-item');
+            
+            subtitleItems.forEach(item => {
+                const inputs = item.querySelectorAll('input');
+                const srclang = inputs[0].value.trim();
+                const label = inputs[1].value.trim();
+                const src = inputs[2].value.trim();
+                const isDefault = inputs[3].checked;
+                
+                if (srclang && label && src) {
+                    subtitles.push({
+                        srclang: srclang,
+                        label: label,
+                        src: src,
+                        default: isDefault
+                    });
+                }
             });
+            
+            return subtitles;
+        }
+        
+        // Função para coletar recursos do player
+        function collectPlayerFeatures() {
+            const features = {};
+            
+            const featureMap = {
+                'featureSubtitles': 'subtitles',
+                'featureSettings': 'settings',
+                'featureFullscreen': 'fullscreen',
+                'featurePlaypause': 'playpause',
+                'featureTimeline': 'timeline',
+                'featureVolume': 'volume',
+                'featureChromecast': 'chromecast',
+                'featureEmbed': 'embed'
+            };
+            
+            Object.keys(featureMap).forEach(checkboxId => {
+                const checkbox = document.getElementById(checkboxId);
+                if (checkbox) {
+                    features[featureMap[checkboxId]] = checkbox.checked;
+                }
+            });
+            
+            return features;
+        }
+        
+        // Função para alternar opções avançadas
+        function toggleAdvancedOptions() {
+            const options = document.getElementById('advancedOptions');
+            const button = event.target;
+            
+            if (options.style.display === 'none') {
+                options.style.display = 'block';
+                button.textContent = '⚙️ Ocultar Opções';
+            } else {
+                options.style.display = 'none';
+                button.textContent = '⚙️ Opções Avançadas';
+            }
+        }
+        
+        // Função para adicionar novo campo de legenda
+        function addSubtitle() {
+            const container = document.getElementById('subtitlesContainer');
+            const newSubtitle = document.createElement('div');
+            newSubtitle.className = 'subtitle-item';
+            newSubtitle.style.cssText = 'margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px;';
+            
+            newSubtitle.innerHTML = `
+                <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+                    <input type="text" placeholder="Código (pt, en, es)" style="flex: 1; padding: 6px; border: 1px solid #ced4da; border-radius: 3px; font-size: 11px;">
+                    <input type="text" placeholder="Rótulo (Português)" style="flex: 1; padding: 6px; border: 1px solid #ced4da; border-radius: 3px; font-size: 11px;">
+                    <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
+                        <input type="checkbox" style="margin-right: 5px;"> Padrão
+                    </label>
+                    <button onclick="removeSubtitle(this)" style="padding: 4px 8px; background: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">❌</button>
+                </div>
+                <input type="url" placeholder="URL do arquivo de legenda (.vtt, .srt)" style="width: 100%; padding: 6px; border: 1px solid #ced4da; border-radius: 3px; font-size: 11px;">
+            `;
+            
+            container.appendChild(newSubtitle);
+        }
+        
+        // Função para remover campo de legenda
+        function removeSubtitle(button) {
+            const subtitleItem = button.closest('.subtitle-item');
+            if (subtitleItem) {
+                subtitleItem.remove();
+            }
+        }
+        
+        // Função para carregar exemplos pré-configurados
+        function loadExample(example) {
+            const examples = {
+                'sintel': {
+                    magnet: 'magnet:?xt=urn:btih:08ada5a7a6183aae1e09d831df6748d566095a10&dn=Sintel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F',
+                    poster: 'https://via.placeholder.com/800x450/4a90e2/ffffff?text=Sintel+Demo',
+                    imdbId: '',
+                    title: 'Sintel - Blender Foundation Demo'
+                },
+                'big-buck-bunny': {
+                    magnet: 'magnet:?xt=urn:btih:dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c&dn=Big+Buck+Bunny&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F',
+                    poster: 'https://via.placeholder.com/800x450/50c878/ffffff?text=Big+Buck+Bunny',
+                    imdbId: '',
+                    title: 'Big Buck Bunny - Blender Foundation'
+                },
+                'tears-of-steel': {
+                    magnet: 'magnet:?xt=urn:btih:209c8226a299a308d577cdb1e8a8b4b6e4e0b7d&dn=Tears+of+Steel&tr=udp%3A%2F%2Fexplodie.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.empire-js.us%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&ws=https%3A%2F%2Fwebtorrent.io%2Ftorrents%2F',
+                    poster: 'https://via.placeholder.com/800x450/dc143c/ffffff?text=Tears+of+Steel',
+                    imdbId: '',
+                    title: 'Tears of Steel - Blender Foundation'
+                }
+            };
+            
+            const exampleData = examples[example];
+            if (exampleData) {
+                // Preencher campos com dados do exemplo
+                document.getElementById('magnet').value = exampleData.magnet;
+                document.getElementById('posterUrl').value = exampleData.poster;
+                document.getElementById('imdbId').value = exampleData.imdbId;
+                
+                // Mostrar opções avançadas se estiverem ocultas
+                const options = document.getElementById('advancedOptions');
+                if (options.style.display === 'none') {
+                    toggleAdvancedOptions();
+                }
+                
+                showStatus(`✅ Exemplo "${exampleData.title}" carregado! Clique em "Assistir" para reproduzir.`, 'success');
+                
+                // Scroll para o botão assistir
+                document.getElementById('magnet').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        
+        // Função para limpar configurações avançadas
+        function clearAdvancedSettings() {
+            // Limpar campos de texto
+            document.getElementById('posterUrl').value = '';
+            document.getElementById('imdbId').value = '';
+            
+            // Resetar idioma para português
+            document.getElementById('playerLang').value = 'pt';
+            
+            // Resetar recursos do player para padrão
+            const defaultFeatures = {
+                'featureSubtitles': true,
+                'featureSettings': true,
+                'featureFullscreen': true,
+                'featurePlaypause': true,
+                'featureTimeline': true,
+                'featureVolume': true,
+                'featureChromecast': false,
+                'featureEmbed': false
+            };
+            
+            Object.keys(defaultFeatures).forEach(checkboxId => {
+                const checkbox = document.getElementById(checkboxId);
+                if (checkbox) {
+                    checkbox.checked = defaultFeatures[checkboxId];
+                }
+            });
+            
+            // Limpar subtítulos (manter apenas o primeiro campo vazio)
+            const container = document.getElementById('subtitlesContainer');
+            const firstSubtitle = container.querySelector('.subtitle-item');
+            if (firstSubtitle) {
+                const inputs = firstSubtitle.querySelectorAll('input');
+                inputs[0].value = '';
+                inputs[1].value = '';
+                inputs[2].value = '';
+                inputs[3].checked = false;
+            }
+            
+            // Remover subtítulos adicionais
+            const additionalSubtitles = container.querySelectorAll('.subtitle-item:not(:first-child)');
+            additionalSubtitles.forEach(subtitle => subtitle.remove());
+            
+            showStatus('✅ Configurações avançadas limpas!', 'success');
+        }
+        
+        // Função para salvar configurações avançadas no localStorage
+        function saveAdvancedSettings() {
+            const settings = {
+                posterUrl: document.getElementById('posterUrl').value,
+                imdbId: document.getElementById('imdbId').value,
+                playerLang: document.getElementById('playerLang').value,
+                features: collectPlayerFeatures(),
+                subtitles: collectSubtitles()
+            };
+            
+            localStorage.setItem('webtorrentAdvancedSettings', JSON.stringify(settings));
+            showStatus('✅ Configurações salvas no navegador!', 'success');
+        }
+        
+        // Função para carregar configurações salvas
+        function loadAdvancedSettings() {
+            const saved = localStorage.getItem('webtorrentAdvancedSettings');
+            if (saved) {
+                try {
+                    const settings = JSON.parse(saved);
+                    
+                    // Carregar configurações básicas
+                    if (settings.posterUrl) document.getElementById('posterUrl').value = settings.posterUrl;
+                    if (settings.imdbId) document.getElementById('imdbId').value = settings.imdbId;
+                    if (settings.playerLang) document.getElementById('playerLang').value = settings.playerLang;
+                    
+                    // Carregar recursos do player
+                    if (settings.features) {
+                        Object.keys(settings.features).forEach(feature => {
+                            const checkboxId = Object.keys(collectPlayerFeatures()).find(id => 
+                                collectPlayerFeatures()[id] === feature
+                            );
+                            if (checkboxId) {
+                                const checkbox = document.getElementById(checkboxId);
+                                if (checkbox) checkbox.checked = settings.features[feature];
+                            }
+                        });
+                    }
+                    
+                    // Carregar subtítulos (implementação simplificada)
+                    if (settings.subtitles && settings.subtitles.length > 0) {
+                        // Limpar subtítulos existentes
+                        const container = document.getElementById('subtitlesContainer');
+                        container.innerHTML = '';
+                        
+                        // Adicionar subtítulos salvos
+                        settings.subtitles.forEach((subtitle, index) => {
+                            if (index === 0) {
+                                // Usar o primeiro campo existente
+                                const firstSubtitle = document.querySelector('.subtitle-item');
+                                if (firstSubtitle) {
+                                    const inputs = firstSubtitle.querySelectorAll('input');
+                                    inputs[0].value = subtitle.srclang;
+                                    inputs[1].value = subtitle.label;
+                                    inputs[2].value = subtitle.src;
+                                    inputs[3].checked = subtitle.default;
+                                }
+                            } else {
+                                // Adicionar novos campos
+                                addSubtitle();
+                                const newSubtitle = container.lastElementChild;
+                                const inputs = newSubtitle.querySelectorAll('input');
+                                inputs[0].value = subtitle.srclang;
+                                inputs[1].value = subtitle.label;
+                                inputs[2].value = subtitle.src;
+                                inputs[3].checked = subtitle.default;
+                            }
+                        });
+                    }
+                    
+                } catch (error) {
+                    console.error('Erro ao carregar configurações:', error);
+                }
+            }
+        }
+        
+        // Método alternativo usando elemento video diretamente
+        function tryAlternativeMethod() {
+            const magnet = document.getElementById('magnet').value.trim();
+            
+            if (!magnet) {
+                showStatus('❌ Por favor, cole um magnet link!', 'error');
+                return;
+            }
+            
+            showStatus('🔧 Tentando método alternativo...', 'loading');
+            
+            // Limpar player anterior
+            document.getElementById('player').innerHTML = '';
+            
+            // Criar elemento video diretamente
+            const videoElement = document.createElement('video');
+            videoElement.id = 'webtor-video';
+            videoElement.controls = true;
+            videoElement.style.width = '100%';
+            videoElement.style.height = '500px';
+            videoElement.style.border = '2px solid #ddd';
+            videoElement.style.borderRadius = '8px';
+            videoElement.src = magnet;
+            
+            // Adicionar poster se configurado
+            const posterUrl = document.getElementById('posterUrl').value.trim();
+            if (posterUrl) {
+                videoElement.poster = posterUrl;
+            }
+            
+            // Adicionar subtítulos se configurados
+            const subtitles = collectSubtitles();
+            subtitles.forEach(subtitle => {
+                const trackElement = document.createElement('track');
+                trackElement.kind = 'subtitles';
+                trackElement.srclang = subtitle.srclang;
+                trackElement.label = subtitle.label;
+                trackElement.src = subtitle.src;
+                if (subtitle.default) {
+                    trackElement.default = true;
+                }
+                videoElement.appendChild(trackElement);
+            });
+            
+            // Adicionar event listeners
+            videoElement.addEventListener('loadstart', () => {
+                console.log('🎥 Método alternativo: Iniciando carregamento');
+                showStatus('🎥 Carregando vídeo (método alternativo)...', 'success');
+            });
+            
+            videoElement.addEventListener('canplay', () => {
+                console.log('✅ Método alternativo: Vídeo pode ser reproduzido');
+                showStatus('✅ Vídeo carregado com método alternativo!', 'success');
+                setTimeout(() => {
+                    const status = document.getElementById('status');
+                    if (status.innerHTML.includes('✅ Vídeo carregado com método alternativo!')) {
+                        status.innerHTML = '';
+                    }
+                }, 3000);
+            });
+            
+            videoElement.addEventListener('error', (e) => {
+                console.error('❌ Método alternativo: Erro no vídeo', e);
+                showStatus('❌ Método alternativo também falhou. O torrent pode não conter vídeos válidos.', 'error');
+            });
+            
+            // Adicionar ao DOM
+            document.getElementById('player').appendChild(videoElement);
+            
+            // Timeout para método alternativo
+            setTimeout(() => {
+                if (videoElement.readyState === 0) {
+                    console.warn('⚠️ Método alternativo: Timeout');
+                    showStatus('⚠️ Método alternativo também não funcionou. O torrent pode estar sem seeders ou não conter vídeos válidos.', 'error');
+                }
+            }, 20000);
+        }
+        
+        // Função para diagnosticar torrent
+        function diagnoseTorrent() {
+            const magnet = document.getElementById('magnet').value.trim();
+            
+            if (!magnet) {
+                showStatus('❌ Cole um magnet link primeiro para diagnosticar', 'error');
+                return;
+            }
+            
+            showStatus('🔍 Diagnosticando torrent...', 'loading');
+            
+            // Extrair informações do magnet link
+            const magnetInfo = parseMagnetLink(magnet);
+            
+            let diagnosis = `
+                <div style="text-align: left; max-width: 600px;">
+                    <h4 style="color: #495057; margin-bottom: 15px;">🔍 Diagnóstico do Torrent:</h4>
+                    
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                        <h5 style="color: #495057; margin: 0 0 10px 0;">📋 Informações do Magnet Link:</h5>
+                        <p style="margin: 5px 0; font-size: 12px;"><strong>Hash:</strong> ${magnetInfo.hash || 'N/A'}</p>
+                        <p style="margin: 5px 0; font-size: 12px;"><strong>Nome:</strong> ${magnetInfo.name || 'N/A'}</p>
+                        <p style="margin: 5px 0; font-size: 12px;"><strong>Trackers:</strong> ${magnetInfo.trackers.length}</p>
+                        <p style="margin: 5px 0; font-size: 12px;"><strong>Tamanho:</strong> ${magnetInfo.size || 'Desconhecido'}</p>
+                    </div>
+                    
+                    <div style="background: #d1ecf1; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                        <h5 style="color: #0c5460; margin: 0 0 10px 0;">💡 Possíveis Problemas:</h5>
+                        <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: #0c5460;">
+                            <li>Torrent pode estar sem seeders ativos</li>
+                            <li>Arquivos de vídeo podem não ser suportados pelo navegador</li>
+                            <li>Torrent pode conter apenas arquivos de áudio ou outros tipos</li>
+                            <li>Conexão com trackers pode estar bloqueada</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="background: #d4edda; padding: 15px; border-radius: 6px;">
+                        <h5 style="color: #155724; margin: 0 0 10px 0;">✅ Soluções Recomendadas:</h5>
+                        <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: #155724;">
+                            <li>Tente usar um dos exemplos pré-configurados</li>
+                            <li>Busque por outros torrents do mesmo conteúdo</li>
+                            <li>Verifique se o torrent contém arquivos de vídeo</li>
+                            <li>Teste o método alternativo se disponível</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            showStatus(diagnosis, 'success');
+        }
+        
+        // Função para verificar suporte do navegador
+        function checkBrowserSupport() {
+            const userAgent = navigator.userAgent;
+            const isChrome = userAgent.includes('Chrome');
+            const isFirefox = userAgent.includes('Firefox');
+            const isSafari = userAgent.includes('Safari') && !userAgent.includes('Chrome');
+            const isEdge = userAgent.includes('Edge');
+            
+            // Verificar recursos do navegador
+            const hasWebRTC = !!(window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection);
+            const hasWebSocket = !!window.WebSocket;
+            const hasLocalStorage = !!window.localStorage;
+            const hasVideo = !!document.createElement('video').canPlayType;
+            
+            let browserInfo = `
+                <div style="text-align: left; max-width: 600px;">
+                    <h4 style="color: #495057; margin-bottom: 15px;">🌐 Informações do Navegador:</h4>
+                    
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                        <h5 style="color: #495057; margin: 0 0 10px 0;">📱 Navegador Detectado:</h5>
+                        <p style="margin: 5px 0; font-size: 12px;"><strong>Tipo:</strong> ${isChrome ? 'Chrome' : isFirefox ? 'Firefox' : isSafari ? 'Safari' : isEdge ? 'Edge' : 'Desconhecido'}</p>
+                        <p style="margin: 5px 0; font-size: 12px;"><strong>User Agent:</strong> ${userAgent.substring(0, 50)}...</p>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                        <h5 style="color: #495057; margin: 0 0 10px 0;">🔧 Recursos Suportados:</h5>
+                        <p style="margin: 5px 0; font-size: 12px;"><strong>WebRTC:</strong> ${hasWebRTC ? '✅ Suportado' : '❌ Não suportado'}</p>
+                        <p style="margin: 5px 0; font-size: 12px;"><strong>WebSocket:</strong> ${hasWebSocket ? '✅ Suportado' : '❌ Não suportado'}</p>
+                        <p style="margin: 5px 0; font-size: 12px;"><strong>LocalStorage:</strong> ${hasLocalStorage ? '✅ Suportado' : '❌ Não suportado'}</p>
+                        <p style="margin: 5px 0; font-size: 12px;"><strong>Elemento Video:</strong> ${hasVideo ? '✅ Suportado' : '❌ Não suportado'}</p>
+                    </div>
+                    
+                    <div style="background: ${hasWebRTC && hasWebSocket ? '#d4edda' : '#f8d7da'}; padding: 15px; border-radius: 6px;">
+                        <h5 style="color: ${hasWebRTC && hasWebSocket ? '#155724' : '#721c24'}; margin: 0 0 10px 0;">
+                            ${hasWebRTC && hasWebSocket ? '✅ Compatibilidade' : '❌ Problemas de Compatibilidade'}
+                        </h5>
+                        <p style="margin: 0; font-size: 12px; color: ${hasWebRTC && hasWebSocket ? '#155724' : '#721c24'};">
+                            ${hasWebRTC && hasWebSocket ? 
+                                'Seu navegador suporta todas as funcionalidades necessárias para WebTorrent.' : 
+                                'Seu navegador pode ter limitações para WebTorrent. Tente usar Chrome ou Firefox.'}
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            showStatus(browserInfo, 'success');
+        }
+        
+        // Função para mostrar guia de solução de problemas
+        function showTroubleshooting() {
+            const troubleshooting = `
+                <div style="text-align: left; max-width: 600px;">
+                    <h4 style="color: #495057; margin-bottom: 15px;">❓ Guia de Solução de Problemas:</h4>
+                    
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                        <h5 style="color: #856404; margin: 0 0 10px 0;">🔧 Problema: Torrent não carrega</h5>
+                        <ol style="margin: 0; padding-left: 20px; font-size: 12px; color: #856404;">
+                            <li>Verifique se o magnet link está correto</li>
+                            <li>Tente usar um dos exemplos pré-configurados</li>
+                            <li>Teste o método alternativo</li>
+                            <li>Verifique sua conexão com a internet</li>
+                            <li>Aguarde alguns minutos (alguns torrents demoram para conectar)</li>
+                        </ol>
+                    </div>
+                    
+                    <div style="background: #d1ecf1; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                        <h5 style="color: #0c5460; margin: 0 0 10px 0;">🎬 Problema: Vídeo não reproduz</h5>
+                        <ol style="margin: 0; padding-left: 20px; font-size: 12px; color: #0c5460;">
+                            <li>Verifique se o torrent contém arquivos de vídeo</li>
+                            <li>Teste com diferentes formatos (MP4, AVI, MKV)</li>
+                            <li>Verifique se o navegador suporta o formato</li>
+                            <li>Tente atualizar o navegador</li>
+                        </ol>
+                    </div>
+                    
+                    <div style="background: #f8d7da; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                        <h5 style="color: #721c24; margin: 0 0 10px 0;">⚠️ Problema: Erro de conexão</h5>
+                        <ol style="margin: 0; padding-left: 20px; font-size: 12px; color: #721c24;">
+                            <li>Verifique se não há firewall bloqueando</li>
+                            <li>Teste com VPN se necessário</li>
+                            <li>Verifique se os trackers estão acessíveis</li>
+                            <li>Tente em horários diferentes</li>
+                        </ol>
+                    </div>
+                    
+                    <div style="background: #d4edda; padding: 15px; border-radius: 6px;">
+                        <h5 style="color: #155724; margin: 0 0 10px 0;">💡 Dicas Gerais:</h5>
+                        <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: #155724;">
+                            <li>Use Chrome ou Firefox para melhor compatibilidade</li>
+                            <li>Mantenha o navegador atualizado</li>
+                            <li>Desative bloqueadores de anúncios temporariamente</li>
+                            <li>Verifique o console do navegador (F12) para erros</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            showStatus(troubleshooting, 'success');
+        }
+        
+        // Função para parsear magnet link
+        function parseMagnetLink(magnet) {
+            const info = {
+                hash: null,
+                name: null,
+                trackers: [],
+                size: null
+            };
+            
+            try {
+                // Extrair hash
+                const hashMatch = magnet.match(/btih:([a-fA-F0-9]{40})/);
+                if (hashMatch) {
+                    info.hash = hashMatch[1];
+                }
+                
+                // Extrair nome
+                const nameMatch = magnet.match(/dn=([^&]+)/);
+                if (nameMatch) {
+                    info.name = decodeURIComponent(nameMatch[1]);
+                }
+                
+                // Extrair trackers
+                const trackerMatches = magnet.match(/tr=([^&]+)/g);
+                if (trackerMatches) {
+                    info.trackers = trackerMatches.map(match => decodeURIComponent(match.replace('tr=', '')));
+                }
+                
+                // Extrair tamanho se disponível
+                const sizeMatch = magnet.match(/xl=(\d+)/);
+                if (sizeMatch) {
+                    const bytes = parseInt(sizeMatch[1]);
+                    info.size = formatBytes(bytes);
+                }
+                
+            } catch (error) {
+                console.error('Erro ao parsear magnet link:', error);
+            }
+            
+            return info;
+        }
+        
+        // Função para formatar bytes
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
         
 
@@ -688,6 +1457,11 @@
         
         // Auto-focus no campo de busca
         document.getElementById('searchQuery').focus();
+        
+        // Carregar configurações salvas quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAdvancedSettings();
+        });
     </script>
     
     <!-- Script do Webtor.io conforme documentação oficial -->

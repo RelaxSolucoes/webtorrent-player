@@ -1111,27 +1111,40 @@
             if (resultElements.length === 0) {
                 resultElements = doc.querySelectorAll('[class*="movie"]');
             }
+            if (resultElements.length === 0) {
+                resultElements = doc.querySelectorAll('div[class*="browse"]');
+            }
+            if (resultElements.length === 0) {
+                resultElements = doc.querySelectorAll('div[class*="movie"]');
+            }
+            if (resultElements.length === 0) {
+                resultElements = doc.querySelectorAll('a[href*="/movies/"]');
+            }
             
             console.log('YTS result elements found:', resultElements.length);
             
             resultElements.forEach((element, index) => {
                 try {
-                    // Tentar múltiplos seletores para o título
-                    let titleLink = element.querySelector('.browse-movie-title a');
-                    if (!titleLink) {
-                        titleLink = element.querySelector('.movie-title a');
-                    }
-                    if (!titleLink) {
-                        titleLink = element.querySelector('a[href*="/movies/"]');
-                    }
-                    if (!titleLink) {
-                        titleLink = element.querySelector('a');
+                    // Se o elemento já é um link, usar diretamente
+                    let titleLink = element;
+                    let title = '';
+                    
+                    if (element.tagName === 'A') {
+                        titleLink = element;
+                        title = element.textContent.trim();
+                    } else {
+                        // Tentar múltiplos seletores para o título
+                        titleLink = element.querySelector('.browse-movie-title a') ||
+                                  element.querySelector('.movie-title a') ||
+                                  element.querySelector('a[href*="/movies/"]') ||
+                                  element.querySelector('a');
+                        
+                        if (titleLink) {
+                            title = titleLink.textContent.trim();
+                        }
                     }
                     
-                    if (!titleLink) return;
-                    
-                    const title = titleLink.textContent.trim();
-                    if (!title || title.length < 3) return;
+                    if (!titleLink || !title || title.length < 3) return;
                     
                     // YTS não tem magnet direto, mas podemos criar um link para a página do filme
                     const movieLink = titleLink.href;
@@ -1192,47 +1205,65 @@
             if (resultElements.length === 0) {
                 resultElements = doc.querySelectorAll('tr');
             }
+            if (resultElements.length === 0) {
+                resultElements = doc.querySelectorAll('div[class*="torrent"]');
+            }
+            if (resultElements.length === 0) {
+                resultElements = doc.querySelectorAll('div[class*="result"]');
+            }
+            if (resultElements.length === 0) {
+                resultElements = doc.querySelectorAll('a[href*="magnet:"]');
+            }
             
             console.log('Pirate Bay result elements found:', resultElements.length);
             
             resultElements.forEach((element, index) => {
                 try {
-                    // Tentar múltiplos seletores para o título
-                    let titleLink = element.querySelector('td:nth-child(2) a');
-                    if (!titleLink) {
-                        titleLink = element.querySelector('td a[href*="/torrent/"]');
+                    let titleLink = null;
+                    let title = '';
+                    let magnet = '';
+                    
+                    // Se o elemento já é um link magnet, usar diretamente
+                    if (element.tagName === 'A' && element.href.startsWith('magnet:')) {
+                        magnet = element.href;
+                        title = element.textContent.trim() || 'Torrent do Pirate Bay';
+                    } else {
+                        // Tentar múltiplos seletores para o título
+                        titleLink = element.querySelector('td:nth-child(2) a') ||
+                                  element.querySelector('td a[href*="/torrent/"]') ||
+                                  element.querySelector('td a') ||
+                                  element.querySelector('a[href*="/torrent/"]') ||
+                                  element.querySelector('a');
+                        
+                        if (titleLink) {
+                            title = titleLink.textContent.trim();
+                        }
+                        
+                        // Tentar múltiplos seletores para o magnet
+                        let magnetLink = element.querySelector('a[href^="magnet:"]') ||
+                                       element.querySelector('a[href*="magnet:"]');
+                        
+                        if (magnetLink) {
+                            magnet = magnetLink.href;
+                        }
                     }
-                    if (!titleLink) {
-                        titleLink = element.querySelector('td a');
-                    }
                     
-                    if (!titleLink) return;
-                    
-                    const title = titleLink.textContent.trim();
-                    if (!title || title.length < 3) return;
-                    
-                    // Tentar múltiplos seletores para o magnet
-                    let magnetLink = element.querySelector('a[href^="magnet:"]');
-                    if (!magnetLink) {
-                        magnetLink = element.querySelector('a[href*="magnet:"]');
-                    }
-                    
-                    if (!magnetLink) return;
-                    
-                    const magnet = magnetLink.href;
+                    if (!title || title.length < 3 || !magnet) return;
                     
                     // Extrair informações adicionais
                     let size = 'N/A';
                     let age = 'N/A';
                     
                     const sizeElement = element.querySelector('td:nth-child(3)') ||
-                                      element.querySelector('td[class*="size"]');
+                                      element.querySelector('td[class*="size"]') ||
+                                      element.querySelector('[class*="size"]');
                     if (sizeElement) {
                         size = sizeElement.textContent.trim();
                     }
                     
                     const ageElement = element.querySelector('td:nth-child(4)') ||
-                                     element.querySelector('td[class*="date"]');
+                                     element.querySelector('td[class*="date"]') ||
+                                     element.querySelector('[class*="date"]');
                     if (ageElement) {
                         age = ageElement.textContent.trim();
                     }

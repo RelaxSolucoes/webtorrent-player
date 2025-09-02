@@ -400,6 +400,11 @@
                 embed: false
             };
             
+            // Variáveis para controle de estado
+            let playerReady = false;
+            let playerPlaying = false;
+            let playerError = false;
+            
             // Configurar Webtor conforme documentação oficial com todas as opções
             window.webtor = window.webtor || [];
             const webtorConfig = {
@@ -411,10 +416,12 @@
                 features: features,
                 on: {
                     ready: function() {
+                        playerReady = true;
                         hideProgressIndicator();
                         showProgressIndicator('✅ Player pronto! Clique em play para assistir', 'success', 3000);
                     },
                     error: function(error) {
+                        playerError = true;
                         hideProgressIndicator();
                         // Tratar diferentes tipos de erro
                         let errorMessage = 'Erro desconhecido';
@@ -446,6 +453,7 @@
                         showProgressIndicator('🔄 Procurando peers... Isso pode levar alguns minutos', 'info');
                     },
                     playing: function() {
+                        playerPlaying = true;
                         hideProgressIndicator();
                         showProgressIndicator('▶️ Reproduzindo!', 'success', 2000);
                     },
@@ -471,28 +479,93 @@
                 webtorConfig.subtitles = subtitles;
             }
             
-            // Adicionar timeout para detectar problemas de carregamento
+            // Sistema de monitoramento inteligente do player
+            let playerCheckInterval = null;
+            let playerCheckCount = 0;
+            const maxPlayerChecks = 60; // 60 verificações = 30 segundos (500ms cada)
+            
+            // Função para verificar o estado do player
+            const checkPlayerState = () => {
+                playerCheckCount++;
+                
+                // Verificar se o player está realmente funcionando
+                const playerElement = document.getElementById('webtor-player');
+                if (playerElement) {
+                    // Verificar se há um elemento video dentro do player
+                    const videoElement = playerElement.querySelector('video');
+                    if (videoElement) {
+                        // Se o vídeo está carregando ou pode reproduzir, considerar sucesso
+                        if (videoElement.readyState >= 2 || videoElement.readyState === 1) {
+                            playerReady = true;
+                            clearInterval(playerCheckInterval);
+                            clearTimeout(loadingTimeout);
+                            hideProgressIndicator();
+                            showProgressIndicator('✅ Player carregado com sucesso!', 'success', 3000);
+                            return;
+                        }
+                        
+                        // Se o vídeo está reproduzindo, considerar sucesso
+                        if (!videoElement.paused && !videoElement.ended) {
+                            playerPlaying = true;
+                            clearInterval(playerCheckInterval);
+                            clearTimeout(loadingTimeout);
+                            hideProgressIndicator();
+                            showProgressIndicator('▶️ Vídeo reproduzindo!', 'success', 2000);
+                            return;
+                        }
+                    }
+                }
+                
+                // Se atingiu o limite de verificações, tentar método alternativo
+                if (playerCheckCount >= maxPlayerChecks) {
+                    clearInterval(playerCheckInterval);
+                    if (!playerReady && !playerPlaying && !playerError && document.getElementById('progressIndicator')) {
+                        hideProgressIndicator();
+                        showProgressIndicator('⚠️ Timeout: Tentando método alternativo...', 'warning');
+                        setTimeout(() => {
+                            tryAlternativeMethod();
+                        }, 2000);
+                    }
+                }
+            };
+            
+            // Iniciar monitoramento do player
+            playerCheckInterval = setInterval(checkPlayerState, 500);
+            
+            // Adicionar timeout de fallback (mais longo)
             const loadingTimeout = setTimeout(() => {
-                if (document.getElementById('progressIndicator')) {
+                clearInterval(playerCheckInterval);
+                // Só tentar método alternativo se o player não estiver pronto E não estiver reproduzindo E não houve erro
+                if (!playerReady && !playerPlaying && !playerError && document.getElementById('progressIndicator')) {
                     hideProgressIndicator();
                     showProgressIndicator('⚠️ Timeout: Tentando método alternativo...', 'warning');
                     setTimeout(() => {
                         tryAlternativeMethod();
                     }, 2000);
                 }
-            }, 30000); // 30 segundos
+            }, 35000); // 35 segundos
             
-            // Limpar timeout quando o player carregar com sucesso
+            // Limpar timeout e intervalo quando o player carregar com sucesso
             const originalReady = webtorConfig.on.ready;
             webtorConfig.on.ready = function() {
                 clearTimeout(loadingTimeout);
+                clearInterval(playerCheckInterval);
                 originalReady();
             };
             
-            // Limpar timeout em caso de erro
+            // Limpar timeout e intervalo quando começar a reproduzir
+            const originalPlaying = webtorConfig.on.playing;
+            webtorConfig.on.playing = function() {
+                clearTimeout(loadingTimeout);
+                clearInterval(playerCheckInterval);
+                originalPlaying();
+            };
+            
+            // Limpar timeout e intervalo em caso de erro
             const originalError = webtorConfig.on.error;
             webtorConfig.on.error = function(error) {
                 clearTimeout(loadingTimeout);
+                clearInterval(playerCheckInterval);
                 originalError(error);
             };
             
@@ -617,14 +690,22 @@
             videoElement.style.borderRadius = '8px';
             videoElement.src = magnet;
             
-            // Usar configurações padrão
+            // Variáveis para controle de estado do método alternativo
+            let alternativeMethodLoaded = false;
+            let alternativeMethodPlaying = false;
+            let alternativeMethodError = false;
             
             // Adicionar event listeners
             videoElement.addEventListener('loadstart', () => {
-                showStatus('🎥 Carregando vídeo (método alternativo)...', 'success');
+                showStatus('🎥 Carregando vídeo (método alternativo)...', 'info');
+            });
+            
+            videoElement.addEventListener('loadedmetadata', () => {
+                showStatus('📊 Metadados carregados (método alternativo)...', 'info');
             });
             
             videoElement.addEventListener('canplay', () => {
+                alternativeMethodLoaded = true;
                 showStatus('✅ Vídeo carregado com método alternativo!', 'success');
                 setTimeout(() => {
                     const status = document.getElementById('status');
@@ -634,19 +715,44 @@
                 }, 3000);
             });
             
+            videoElement.addEventListener('play', () => {
+                alternativeMethodPlaying = true;
+                showStatus('▶️ Reproduzindo com método alternativo!', 'success');
+                setTimeout(() => {
+                    const status = document.getElementById('status');
+                    if (status.innerHTML.includes('▶️ Reproduzindo com método alternativo!')) {
+                        status.innerHTML = '';
+                    }
+                }, 2000);
+            });
+            
             videoElement.addEventListener('error', (e) => {
+                alternativeMethodError = true;
                 showStatus('❌ Método alternativo também falhou. O torrent pode não conter vídeos válidos.', 'error');
             });
             
             // Adicionar ao DOM
             document.getElementById('player').appendChild(videoElement);
             
-            // Timeout para método alternativo
-            setTimeout(() => {
-                if (videoElement.readyState === 0) {
+            // Timeout para método alternativo - só ativar se não carregou e não está reproduzindo
+            const alternativeTimeout = setTimeout(() => {
+                if (!alternativeMethodLoaded && !alternativeMethodPlaying && !alternativeMethodError) {
                     showStatus('⚠️ Método alternativo também não funcionou. O torrent pode estar sem seeders ou não conter vídeos válidos.', 'error');
                 }
             }, 20000);
+            
+            // Limpar timeout se o vídeo carregar com sucesso
+            videoElement.addEventListener('canplay', () => {
+                clearTimeout(alternativeTimeout);
+            });
+            
+            videoElement.addEventListener('play', () => {
+                clearTimeout(alternativeTimeout);
+            });
+            
+            videoElement.addEventListener('error', () => {
+                clearTimeout(alternativeTimeout);
+            });
         }
         
 

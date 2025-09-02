@@ -4,7 +4,7 @@
 
 ## 🚀 Demo
 
-**[Acesse aqui](https://relaxsolucoes.github.io/webtorrent-player/)**
+**[Acesse aqui]([https://relaxsolucoes.github.io/webtorrent-player/](https://relaxsolucoes.github.io/webtorrent-player/))**
 
 > 🎬 **WebTorrent Player** - Streaming P2P gratuito e sem registro
 

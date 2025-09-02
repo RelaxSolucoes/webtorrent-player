@@ -504,45 +504,54 @@
             // Limpar player anterior
             document.getElementById('player').innerHTML = '';
             
-            // Criar elemento de vídeo
-            const video = document.createElement('video');
-            video.controls = true;
-            video.style.width = '100%';
-            video.style.height = '500px';
-            video.style.borderRadius = '8px';
+            // Criar iframe que carrega webtor.io com o arquivo
+            const iframe = document.createElement('iframe');
+            iframe.style.width = '100%';
+            iframe.style.height = '500px';
+            iframe.style.border = 'none';
+            iframe.style.borderRadius = '8px';
+            iframe.style.backgroundColor = '#f8f9fa';
             
-            // Usar FileReader para ler o arquivo .torrent
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                // Converter arquivo .torrent para magnet link usando WebTorrent
-                if (window.WebTorrent) {
-                    const client = new WebTorrent();
-                    const torrent = client.add(e.target.result);
-                    
-                    torrent.on('ready', function() {
-                        // Criar magnet link a partir do torrent
-                        const magnet = torrent.magnetURI;
-                        video.src = magnet;
-                        
-                        document.getElementById('player').appendChild(video);
-                        
-                        // Usar WebtorEmbed para processar o vídeo
-                        if (window.webtor) {
-                            window.webtor.push(video);
-                        } else {
-                            showStatus('⚠️ WebtorEmbed não carregado. Recarregue a página.', 'error');
-                        }
-                    });
-                    
-                    torrent.on('error', function(error) {
-                        showStatus(`❌ Erro ao processar arquivo .torrent: ${error.message}`, 'error');
-                    });
-                } else {
-                    showStatus('❌ WebTorrent não carregado. Recarregue a página.', 'error');
+            // Criar um formulário temporário para enviar o arquivo
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = 'https://webtor.io/';
+            form.enctype = 'multipart/form-data';
+            form.target = iframe.name = 'webtor-frame-' + Date.now();
+            form.style.display = 'none';
+            
+            // Adicionar o arquivo
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.name = 'resource';
+            fileInput.files = [selectedTorrentFile];
+            form.appendChild(fileInput);
+            
+            // Adicionar instruction
+            const instructionInput = document.createElement('input');
+            instructionInput.type = 'hidden';
+            instructionInput.name = 'instruction';
+            instructionInput.value = '';
+            form.appendChild(instructionInput);
+            
+            // Adicionar iframe ao player
+            document.getElementById('player').appendChild(iframe);
+            
+            // Adicionar formulário ao body e submeter
+            document.body.appendChild(form);
+            form.submit();
+            
+            // Remover formulário após envio
+            setTimeout(() => {
+                if (document.body.contains(form)) {
+                    document.body.removeChild(form);
                 }
-            };
+            }, 1000);
             
-            reader.readAsArrayBuffer(selectedTorrentFile);
+            // Mostrar status de sucesso após um tempo
+            setTimeout(() => {
+                showStatus('✅ Arquivo .torrent carregado! Use os controles do player abaixo.', 'success');
+            }, 3000);
         }
 
         async function searchTorrents() {
@@ -826,9 +835,6 @@
         // Auto-focus no campo de busca
         document.getElementById('searchQuery').focus();
     </script>
-    
-    <!-- Script do WebTorrent para suporte a arquivos .torrent -->
-    <script src="https://cdn.jsdelivr.net/npm/webtorrent@latest/webtorrent.min.js"></script>
     
     <!-- Script do Webtor.io conforme documentação oficial -->
     <script src="https://cdn.jsdelivr.net/npm/@webtor/embed-sdk-js/dist/index.min.js" charset="utf-8" async></script>

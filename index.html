@@ -252,6 +252,34 @@
             </div>
         </section>
         
+        <!-- Upload de arquivo torrent -->
+        <section aria-label="Upload de Arquivo Torrent">
+            <div style="margin-bottom: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                <h2>📁 ou faça upload de um arquivo .torrent</h2>
+                <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Arraste e solte um arquivo .torrent ou clique para selecionar</p>
+                
+                <div id="dropzone" style="border: 2px dashed #007bff; border-radius: 8px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s ease; background: white;" 
+                     ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" onclick="document.getElementById('torrentFile').click()">
+                    <div style="font-size: 48px; margin-bottom: 15px; color: #007bff;">☁️</div>
+                    <p style="font-size: 16px; color: #007bff; margin-bottom: 10px;">
+                        <strong>Arraste o arquivo .torrent aqui</strong> ou clique para selecionar
+                    </p>
+                    <p style="font-size: 12px; color: #666; text-transform: uppercase;">
+                        (Sem limite de tamanho)
+                    </p>
+                </div>
+                
+                <input type="file" id="torrentFile" accept=".torrent" style="display: none;" onchange="handleFileSelect(event)">
+                
+                <div id="fileInfo" style="margin-top: 15px; padding: 10px; background: #e8f5e8; border-radius: 4px; font-size: 12px; color: #2e7d32; display: none;">
+                    <strong>📄 Arquivo selecionado:</strong> <span id="fileName"></span>
+                    <button onclick="loadTorrentFile()" style="margin-left: 10px; padding: 4px 8px; background: #4caf50; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">
+                        ▶️ Assistir
+                    </button>
+                </div>
+            </div>
+        </section>
+        
         <div id="status" role="status" aria-live="polite"></div>
         
         <section aria-label="Player de Vídeo">
@@ -404,7 +432,118 @@
             });
         }
         
-
+        // Funções para upload de arquivo torrent
+        let selectedTorrentFile = null;
+        
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.getElementById('dropzone').style.borderColor = '#4caf50';
+            document.getElementById('dropzone').style.backgroundColor = '#f0f8f0';
+        }
+        
+        function handleDragLeave(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.getElementById('dropzone').style.borderColor = '#007bff';
+            document.getElementById('dropzone').style.backgroundColor = 'white';
+        }
+        
+        function handleDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            document.getElementById('dropzone').style.borderColor = '#007bff';
+            document.getElementById('dropzone').style.backgroundColor = 'white';
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        }
+        
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+        
+        function handleFile(file) {
+            // Verificar se é um arquivo .torrent
+            if (!file.name.toLowerCase().endsWith('.torrent')) {
+                showStatus('❌ Por favor, selecione apenas arquivos .torrent', 'error');
+                return;
+            }
+            
+            selectedTorrentFile = file;
+            
+            // Mostrar informações do arquivo
+            document.getElementById('fileName').textContent = file.name + ' (' + formatFileSize(file.size) + ')';
+            document.getElementById('fileInfo').style.display = 'block';
+            
+            showStatus('✅ Arquivo .torrent carregado! Clique em "Assistir" para reproduzir', 'success');
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function loadTorrentFile() {
+            if (!selectedTorrentFile) {
+                showStatus('❌ Nenhum arquivo .torrent selecionado', 'error');
+                return;
+            }
+            
+            showStatus('🔄 Carregando arquivo .torrent... Aguarde alguns segundos', 'loading');
+            
+            // Limpar player anterior
+            document.getElementById('player').innerHTML = '';
+            
+            // Criar elemento de vídeo
+            const video = document.createElement('video');
+            video.controls = true;
+            video.style.width = '100%';
+            video.style.height = '500px';
+            video.style.borderRadius = '8px';
+            
+            // Usar FileReader para ler o arquivo .torrent
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Converter arquivo .torrent para magnet link usando WebTorrent
+                if (window.WebTorrent) {
+                    const client = new WebTorrent();
+                    const torrent = client.add(e.target.result);
+                    
+                    torrent.on('ready', function() {
+                        // Criar magnet link a partir do torrent
+                        const magnet = torrent.magnetURI;
+                        video.src = magnet;
+                        
+                        document.getElementById('player').appendChild(video);
+                        
+                        // Usar WebtorEmbed para processar o vídeo
+                        if (window.webtor) {
+                            window.webtor.push(video);
+                        } else {
+                            showStatus('⚠️ WebtorEmbed não carregado. Recarregue a página.', 'error');
+                        }
+                    });
+                    
+                    torrent.on('error', function(error) {
+                        showStatus(`❌ Erro ao processar arquivo .torrent: ${error.message}`, 'error');
+                    });
+                } else {
+                    showStatus('❌ WebTorrent não carregado. Recarregue a página.', 'error');
+                }
+            };
+            
+            reader.readAsArrayBuffer(selectedTorrentFile);
+        }
 
         async function searchTorrents() {
             const query = document.getElementById('searchQuery').value.trim();
@@ -687,6 +826,9 @@
         // Auto-focus no campo de busca
         document.getElementById('searchQuery').focus();
     </script>
+    
+    <!-- Script do WebTorrent para suporte a arquivos .torrent -->
+    <script src="https://cdn.jsdelivr.net/npm/webtorrent@latest/webtorrent.min.js"></script>
     
     <!-- Script do Webtor.io conforme documentação oficial -->
     <script src="https://cdn.jsdelivr.net/npm/@webtor/embed-sdk-js/dist/index.min.js" charset="utf-8" async></script>

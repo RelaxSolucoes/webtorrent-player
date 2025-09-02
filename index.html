@@ -247,13 +247,7 @@
                 </div>
                 
                 <!-- Opções Avançadas -->
-                <div style="margin-top: 15px;">
-                    <button onclick="toggleAdvancedOptions()" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                        ⚙️ Opções Avançadas
-                    </button>
-                </div>
-                
-                <div id="advancedOptions" style="display: none; margin-top: 15px; padding: 15px; background: #fff; border: 1px solid #dee2e6; border-radius: 6px;">
+                <div id="advancedOptions" style="display: block; margin-top: 15px; padding: 15px; background: #fff; border: 1px solid #dee2e6; border-radius: 6px;">
                     <h4 style="margin: 0 0 15px 0; color: #495057; font-size: 14px;">🎛️ Configurações Avançadas</h4>
                     
                     <!-- Poster Image -->
@@ -373,24 +367,7 @@
                     </small>
                 </div>
                 
-                <!-- Diagnóstico e Solução de Problemas -->
-                <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px;">
-                    <h4 style="margin: 0 0 10px 0; color: #856404; font-size: 13px;">🔧 Diagnóstico de Problemas:</h4>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
-                        <button onclick="diagnoseTorrent()" style="padding: 6px 12px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
-                            🔍 Diagnosticar Torrent
-                        </button>
-                        <button onclick="checkBrowserSupport()" style="padding: 6px 12px; background: #6f42c1; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
-                            🌐 Verificar Navegador
-                        </button>
-                        <button onclick="showTroubleshooting()" style="padding: 6px 12px; background: #fd7e14; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
-                            ❓ Guia de Solução
-                        </button>
-                    </div>
-                    <small style="color: #856404; font-size: 10px; display: block;">
-                        Use estas ferramentas para identificar e resolver problemas de carregamento
-                    </small>
-                </div>
+
                 
                 <div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 4px; font-size: 12px; color: #1976d2;">
                     <strong>💡 Dica:</strong> Se o torrent não carregar, pode ser que não tenha seeders ativos. 
@@ -505,7 +482,6 @@
                 features: features,
                 on: {
                     ready: function() {
-                        console.log('✅ Webtor: Player pronto');
                         showStatus('✅ Vídeo carregado! Clique em play para assistir', 'success');
                         // Remover status após 4 segundos
                         setTimeout(() => {
@@ -516,8 +492,6 @@
                         }, 4000);
                     },
                     error: function(error) {
-                        console.error('❌ Erro Webtor:', error);
-                        
                         // Tratar diferentes tipos de erro
                         let errorMessage = 'Erro desconhecido';
                         let suggestions = '';
@@ -542,15 +516,12 @@
                         showStatus(`❌ ${errorMessage}<br><small>${suggestions}</small><br><button onclick="loadVideo()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">🔄 Tentar Novamente</button>`, 'error');
                     },
                     loading: function() {
-                        console.log('⏳ Webtor: Carregando...');
                         showStatus('⏳ Conectando ao torrent...', 'success');
                     },
                     magnetizing: function() {
-                        console.log('🔄 Webtor: Magnetizando...');
                         showStatus('🔄 Procurando peers... Isso pode levar alguns minutos', 'success');
                     },
                     playing: function() {
-                        console.log('▶️ Webtor: Reproduzindo');
                         showStatus('▶️ Reproduzindo...', 'success');
                         // Remover status após 2 segundos
                         setTimeout(() => {
@@ -559,31 +530,6 @@
                                 status.innerHTML = '';
                             }
                         }, 2000);
-                    },
-                    // Adicionar mais callbacks para debug
-                    torrent: function(torrent) {
-                        console.log('📁 Webtor: Torrent carregado:', torrent);
-                        console.log('📁 Arquivos no torrent:', torrent.files.length);
-                        torrent.files.forEach((file, index) => {
-                            console.log(`📄 Arquivo ${index + 1}:`, file.name, `(${file.length} bytes)`);
-                        });
-                        
-                        // Verificar se há arquivos de vídeo
-                        const videoFiles = torrent.files.filter(file => 
-                            file.name.match(/\.(mp4|avi|mkv|webm|mov|m4v)$/i)
-                        );
-                        
-                        if (videoFiles.length === 0) {
-                            console.warn('⚠️ Nenhum arquivo de vídeo encontrado no torrent');
-                            showStatus('⚠️ Nenhum arquivo de vídeo encontrado neste torrent. Verifique se contém arquivos de vídeo válidos.', 'error');
-                        } else {
-                            console.log('🎬 Arquivos de vídeo encontrados:', videoFiles.length);
-                            showStatus(`🎬 ${videoFiles.length} arquivo(s) de vídeo encontrado(s). Carregando...`, 'success');
-                        }
-                    },
-                    stream: function(stream) {
-                        console.log('🎥 Webtor: Stream iniciado:', stream);
-                        showStatus('🎥 Stream de vídeo iniciado!', 'success');
                     }
                 }
             };
@@ -605,7 +551,6 @@
             const loadingTimeout = setTimeout(() => {
                 const playerElement = document.getElementById('webtor-player');
                 if (playerElement && playerElement.innerHTML.trim() === '') {
-                    console.warn('⚠️ Timeout: Player não carregou após 30 segundos');
                     showStatus(`
                         ⚠️ <strong>Problema detectado:</strong> O torrent foi processado mas não carregou o player.<br>
                         <small>💡 <strong>Possíveis causas:</strong></small><br>
@@ -686,19 +631,7 @@
             return features;
         }
         
-        // Função para alternar opções avançadas
-        function toggleAdvancedOptions() {
-            const options = document.getElementById('advancedOptions');
-            const button = event.target;
-            
-            if (options.style.display === 'none') {
-                options.style.display = 'block';
-                button.textContent = '⚙️ Ocultar Opções';
-            } else {
-                options.style.display = 'none';
-                button.textContent = '⚙️ Opções Avançadas';
-            }
-        }
+
         
         // Função para adicionar novo campo de legenda
         function addSubtitle() {
@@ -760,11 +693,7 @@
                 document.getElementById('posterUrl').value = exampleData.poster;
                 document.getElementById('imdbId').value = exampleData.imdbId;
                 
-                // Mostrar opções avançadas se estiverem ocultas
-                const options = document.getElementById('advancedOptions');
-                if (options.style.display === 'none') {
-                    toggleAdvancedOptions();
-                }
+                // As opções avançadas já estão visíveis
                 
                 showStatus(`✅ Exemplo "${exampleData.title}" carregado! Clique em "Assistir" para reproduzir.`, 'success');
                 
@@ -890,7 +819,7 @@
                     }
                     
                 } catch (error) {
-                    console.error('Erro ao carregar configurações:', error);
+                    // Erro silencioso ao carregar configurações
                 }
             }
         }
@@ -941,12 +870,10 @@
             
             // Adicionar event listeners
             videoElement.addEventListener('loadstart', () => {
-                console.log('🎥 Método alternativo: Iniciando carregamento');
                 showStatus('🎥 Carregando vídeo (método alternativo)...', 'success');
             });
             
             videoElement.addEventListener('canplay', () => {
-                console.log('✅ Método alternativo: Vídeo pode ser reproduzido');
                 showStatus('✅ Vídeo carregado com método alternativo!', 'success');
                 setTimeout(() => {
                     const status = document.getElementById('status');
@@ -957,7 +884,6 @@
             });
             
             videoElement.addEventListener('error', (e) => {
-                console.error('❌ Método alternativo: Erro no vídeo', e);
                 showStatus('❌ Método alternativo também falhou. O torrent pode não conter vídeos válidos.', 'error');
             });
             
@@ -967,213 +893,12 @@
             // Timeout para método alternativo
             setTimeout(() => {
                 if (videoElement.readyState === 0) {
-                    console.warn('⚠️ Método alternativo: Timeout');
                     showStatus('⚠️ Método alternativo também não funcionou. O torrent pode estar sem seeders ou não conter vídeos válidos.', 'error');
                 }
             }, 20000);
         }
         
-        // Função para diagnosticar torrent
-        function diagnoseTorrent() {
-            const magnet = document.getElementById('magnet').value.trim();
-            
-            if (!magnet) {
-                showStatus('❌ Cole um magnet link primeiro para diagnosticar', 'error');
-                return;
-            }
-            
-            showStatus('🔍 Diagnosticando torrent...', 'loading');
-            
-            // Extrair informações do magnet link
-            const magnetInfo = parseMagnetLink(magnet);
-            
-            let diagnosis = `
-                <div style="text-align: left; max-width: 600px;">
-                    <h4 style="color: #495057; margin-bottom: 15px;">🔍 Diagnóstico do Torrent:</h4>
-                    
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-                        <h5 style="color: #495057; margin: 0 0 10px 0;">📋 Informações do Magnet Link:</h5>
-                        <p style="margin: 5px 0; font-size: 12px;"><strong>Hash:</strong> ${magnetInfo.hash || 'N/A'}</p>
-                        <p style="margin: 5px 0; font-size: 12px;"><strong>Nome:</strong> ${magnetInfo.name || 'N/A'}</p>
-                        <p style="margin: 5px 0; font-size: 12px;"><strong>Trackers:</strong> ${magnetInfo.trackers.length}</p>
-                        <p style="margin: 5px 0; font-size: 12px;"><strong>Tamanho:</strong> ${magnetInfo.size || 'Desconhecido'}</p>
-                    </div>
-                    
-                    <div style="background: #d1ecf1; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-                        <h5 style="color: #0c5460; margin: 0 0 10px 0;">💡 Possíveis Problemas:</h5>
-                        <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: #0c5460;">
-                            <li>Torrent pode estar sem seeders ativos</li>
-                            <li>Arquivos de vídeo podem não ser suportados pelo navegador</li>
-                            <li>Torrent pode conter apenas arquivos de áudio ou outros tipos</li>
-                            <li>Conexão com trackers pode estar bloqueada</li>
-                        </ul>
-                    </div>
-                    
-                    <div style="background: #d4edda; padding: 15px; border-radius: 6px;">
-                        <h5 style="color: #155724; margin: 0 0 10px 0;">✅ Soluções Recomendadas:</h5>
-                        <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: #155724;">
-                            <li>Tente usar um dos exemplos pré-configurados</li>
-                            <li>Busque por outros torrents do mesmo conteúdo</li>
-                            <li>Verifique se o torrent contém arquivos de vídeo</li>
-                            <li>Teste o método alternativo se disponível</li>
-                        </ul>
-                    </div>
-                </div>
-            `;
-            
-            showStatus(diagnosis, 'success');
-        }
-        
-        // Função para verificar suporte do navegador
-        function checkBrowserSupport() {
-            const userAgent = navigator.userAgent;
-            const isChrome = userAgent.includes('Chrome');
-            const isFirefox = userAgent.includes('Firefox');
-            const isSafari = userAgent.includes('Safari') && !userAgent.includes('Chrome');
-            const isEdge = userAgent.includes('Edge');
-            
-            // Verificar recursos do navegador
-            const hasWebRTC = !!(window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection);
-            const hasWebSocket = !!window.WebSocket;
-            const hasLocalStorage = !!window.localStorage;
-            const hasVideo = !!document.createElement('video').canPlayType;
-            
-            let browserInfo = `
-                <div style="text-align: left; max-width: 600px;">
-                    <h4 style="color: #495057; margin-bottom: 15px;">🌐 Informações do Navegador:</h4>
-                    
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-                        <h5 style="color: #495057; margin: 0 0 10px 0;">📱 Navegador Detectado:</h5>
-                        <p style="margin: 5px 0; font-size: 12px;"><strong>Tipo:</strong> ${isChrome ? 'Chrome' : isFirefox ? 'Firefox' : isSafari ? 'Safari' : isEdge ? 'Edge' : 'Desconhecido'}</p>
-                        <p style="margin: 5px 0; font-size: 12px;"><strong>User Agent:</strong> ${userAgent.substring(0, 50)}...</p>
-                    </div>
-                    
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-                        <h5 style="color: #495057; margin: 0 0 10px 0;">🔧 Recursos Suportados:</h5>
-                        <p style="margin: 5px 0; font-size: 12px;"><strong>WebRTC:</strong> ${hasWebRTC ? '✅ Suportado' : '❌ Não suportado'}</p>
-                        <p style="margin: 5px 0; font-size: 12px;"><strong>WebSocket:</strong> ${hasWebSocket ? '✅ Suportado' : '❌ Não suportado'}</p>
-                        <p style="margin: 5px 0; font-size: 12px;"><strong>LocalStorage:</strong> ${hasLocalStorage ? '✅ Suportado' : '❌ Não suportado'}</p>
-                        <p style="margin: 5px 0; font-size: 12px;"><strong>Elemento Video:</strong> ${hasVideo ? '✅ Suportado' : '❌ Não suportado'}</p>
-                    </div>
-                    
-                    <div style="background: ${hasWebRTC && hasWebSocket ? '#d4edda' : '#f8d7da'}; padding: 15px; border-radius: 6px;">
-                        <h5 style="color: ${hasWebRTC && hasWebSocket ? '#155724' : '#721c24'}; margin: 0 0 10px 0;">
-                            ${hasWebRTC && hasWebSocket ? '✅ Compatibilidade' : '❌ Problemas de Compatibilidade'}
-                        </h5>
-                        <p style="margin: 0; font-size: 12px; color: ${hasWebRTC && hasWebSocket ? '#155724' : '#721c24'};">
-                            ${hasWebRTC && hasWebSocket ? 
-                                'Seu navegador suporta todas as funcionalidades necessárias para WebTorrent.' : 
-                                'Seu navegador pode ter limitações para WebTorrent. Tente usar Chrome ou Firefox.'}
-                        </p>
-                    </div>
-                </div>
-            `;
-            
-            showStatus(browserInfo, 'success');
-        }
-        
-        // Função para mostrar guia de solução de problemas
-        function showTroubleshooting() {
-            const troubleshooting = `
-                <div style="text-align: left; max-width: 600px;">
-                    <h4 style="color: #495057; margin-bottom: 15px;">❓ Guia de Solução de Problemas:</h4>
-                    
-                    <div style="background: #fff3cd; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-                        <h5 style="color: #856404; margin: 0 0 10px 0;">🔧 Problema: Torrent não carrega</h5>
-                        <ol style="margin: 0; padding-left: 20px; font-size: 12px; color: #856404;">
-                            <li>Verifique se o magnet link está correto</li>
-                            <li>Tente usar um dos exemplos pré-configurados</li>
-                            <li>Teste o método alternativo</li>
-                            <li>Verifique sua conexão com a internet</li>
-                            <li>Aguarde alguns minutos (alguns torrents demoram para conectar)</li>
-                        </ol>
-                    </div>
-                    
-                    <div style="background: #d1ecf1; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-                        <h5 style="color: #0c5460; margin: 0 0 10px 0;">🎬 Problema: Vídeo não reproduz</h5>
-                        <ol style="margin: 0; padding-left: 20px; font-size: 12px; color: #0c5460;">
-                            <li>Verifique se o torrent contém arquivos de vídeo</li>
-                            <li>Teste com diferentes formatos (MP4, AVI, MKV)</li>
-                            <li>Verifique se o navegador suporta o formato</li>
-                            <li>Tente atualizar o navegador</li>
-                        </ol>
-                    </div>
-                    
-                    <div style="background: #f8d7da; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-                        <h5 style="color: #721c24; margin: 0 0 10px 0;">⚠️ Problema: Erro de conexão</h5>
-                        <ol style="margin: 0; padding-left: 20px; font-size: 12px; color: #721c24;">
-                            <li>Verifique se não há firewall bloqueando</li>
-                            <li>Teste com VPN se necessário</li>
-                            <li>Verifique se os trackers estão acessíveis</li>
-                            <li>Tente em horários diferentes</li>
-                        </ol>
-                    </div>
-                    
-                    <div style="background: #d4edda; padding: 15px; border-radius: 6px;">
-                        <h5 style="color: #155724; margin: 0 0 10px 0;">💡 Dicas Gerais:</h5>
-                        <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: #155724;">
-                            <li>Use Chrome ou Firefox para melhor compatibilidade</li>
-                            <li>Mantenha o navegador atualizado</li>
-                            <li>Desative bloqueadores de anúncios temporariamente</li>
-                            <li>Verifique o console do navegador (F12) para erros</li>
-                        </ul>
-                    </div>
-                </div>
-            `;
-            
-            showStatus(troubleshooting, 'success');
-        }
-        
-        // Função para parsear magnet link
-        function parseMagnetLink(magnet) {
-            const info = {
-                hash: null,
-                name: null,
-                trackers: [],
-                size: null
-            };
-            
-            try {
-                // Extrair hash
-                const hashMatch = magnet.match(/btih:([a-fA-F0-9]{40})/);
-                if (hashMatch) {
-                    info.hash = hashMatch[1];
-                }
-                
-                // Extrair nome
-                const nameMatch = magnet.match(/dn=([^&]+)/);
-                if (nameMatch) {
-                    info.name = decodeURIComponent(nameMatch[1]);
-                }
-                
-                // Extrair trackers
-                const trackerMatches = magnet.match(/tr=([^&]+)/g);
-                if (trackerMatches) {
-                    info.trackers = trackerMatches.map(match => decodeURIComponent(match.replace('tr=', '')));
-                }
-                
-                // Extrair tamanho se disponível
-                const sizeMatch = magnet.match(/xl=(\d+)/);
-                if (sizeMatch) {
-                    const bytes = parseInt(sizeMatch[1]);
-                    info.size = formatBytes(bytes);
-                }
-                
-            } catch (error) {
-                console.error('Erro ao parsear magnet link:', error);
-            }
-            
-            return info;
-        }
-        
-        // Função para formatar bytes
-        function formatBytes(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
+
         
 
 
@@ -1200,7 +925,6 @@
                 }
                 
             } catch (error) {
-                console.error('Erro na busca:', error);
                 showStatus('❌ Erro ao buscar torrents. Verifique sua conexão.', 'error');
                 document.getElementById('searchResults').innerHTML = '<p>Erro na busca. Tente novamente.</p>';
             }
@@ -1212,8 +936,6 @@
             const proxy = 'https://corsproxy.io/?';
             
             try {
-                console.log(`Buscando: ${proxy}${endpoint}`);
-                
                 const response = await fetch(proxy + encodeURIComponent(endpoint), {
                     method: 'GET',
                     headers: {
@@ -1227,15 +949,11 @@
                 }
                 
                 const html = await response.text();
-                console.log('HTML recebido:', html.length, 'caracteres');
-                
                 const results = parseBTDiggResults(html);
-                console.log('Resultados parseados:', results.length);
                 
                 return results;
                 
             } catch (error) {
-                console.log('Erro na busca:', error.message);
                 return [];
             }
         }
@@ -1245,11 +963,8 @@
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             
-            console.log('Parsing HTML do BTDigg...');
-            
             // Procurar por elementos .one_result (estrutura real do BTDigg)
             const resultElements = doc.querySelectorAll('.one_result');
-            console.log(`Encontrados ${resultElements.length} elementos .one_result`);
             
             resultElements.forEach((element, index) => {
                 try {
@@ -1368,11 +1083,10 @@
                         });
                     }
                 } catch (error) {
-                    console.log('Erro ao processar elemento:', error);
+                    // Erro silencioso ao processar elemento
                 }
             });
             
-            console.log(`Total de resultados válidos: ${results.length}`);
             return results.slice(0, 15); // Limitar a 15 resultados
         }
         

@@ -910,17 +910,37 @@
                 return;
             }
             
-            showStatus('🔍 Buscando torrents...', 'loading');
+            showStatus('🔍 Buscando torrents em múltiplas fontes...', 'loading');
             
             try {
-                // Usar API direta do BTDigg (baseada no dhtcrawler2)
-                const results = await searchBTDiggAPI(query);
+                // Tentar múltiplas fontes de busca
+                const searchPromises = [
+                    searchBTDiggAPI(query),
+                    searchTorrentzAPI(query),
+                    searchNyaaAPI(query)
+                ];
                 
-                if (results.length > 0) {
-                    displaySearchResults(results);
-                    showStatus(`✅ Encontrados ${results.length} resultados reais!`, 'success');
+                // Aguardar todas as buscas (com timeout)
+                const results = await Promise.allSettled(searchPromises);
+                
+                // Combinar resultados de todas as fontes
+                let allResults = [];
+                let successfulSearches = 0;
+                
+                results.forEach((result, index) => {
+                    if (result.status === 'fulfilled' && result.value.length > 0) {
+                        allResults = allResults.concat(result.value);
+                        successfulSearches++;
+                    }
+                });
+                
+                if (allResults.length > 0) {
+                    // Remover duplicatas baseado no hash
+                    const uniqueResults = removeDuplicateTorrents(allResults);
+                    displaySearchResults(uniqueResults);
+                    showStatus(`✅ Encontrados ${uniqueResults.length} resultados de ${successfulSearches} fontes!`, 'success');
                 } else {
-                    showStatus('❌ Nenhum resultado encontrado. Tente outros termos de busca.', 'error');
+                    showStatus('❌ Nenhum resultado encontrado em nenhuma fonte. Tente outros termos de busca.', 'error');
                     document.getElementById('searchResults').innerHTML = '<p>Nenhum resultado encontrado para sua busca.</p>';
                 }
                 
@@ -931,7 +951,6 @@
         }
         
         async function searchBTDiggAPI(query) {
-            // Usar apenas o proxy que funciona (corsproxy.io)
             const endpoint = `https://btdig.com/search?q=${encodeURIComponent(query)}&order=0`;
             const proxy = 'https://corsproxy.io/?';
             
@@ -950,6 +969,62 @@
                 
                 const html = await response.text();
                 const results = parseBTDiggResults(html);
+                
+                return results;
+                
+            } catch (error) {
+                return [];
+            }
+        }
+        
+        async function searchTorrentzAPI(query) {
+            // Torrentz2 - site confiável e sem CAPTCHA
+            const endpoint = `https://torrentz2.nz/search?q=${encodeURIComponent(query)}`;
+            const proxy = 'https://corsproxy.io/?';
+            
+            try {
+                const response = await fetch(proxy + encodeURIComponent(endpoint), {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const html = await response.text();
+                const results = parseTorrentzResults(html);
+                
+                return results;
+                
+            } catch (error) {
+                return [];
+            }
+        }
+        
+        async function searchNyaaAPI(query) {
+            // Nyaa.si - especializado em anime, mas tem outros conteúdos
+            const endpoint = `https://nyaa.si/?q=${encodeURIComponent(query)}&s=downloads&o=desc`;
+            const proxy = 'https://corsproxy.io/?';
+            
+            try {
+                const response = await fetch(proxy + encodeURIComponent(endpoint), {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const html = await response.text();
+                const results = parseNyaaResults(html);
                 
                 return results;
                 
@@ -1079,7 +1154,8 @@
                             size: size,
                             files: files,
                             age: age,
-                            fileDetails: fileDetails
+                            fileDetails: fileDetails,
+                            source: 'BTDigg'
                         });
                     }
                 } catch (error) {
@@ -1088,6 +1164,143 @@
             });
             
             return results.slice(0, 15); // Limitar a 15 resultados
+        }
+        
+        function parseTorrentzResults(html) {
+            const results = [];
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Procurar por elementos de resultado do Torrentz2
+            const resultElements = doc.querySelectorAll('.results dl');
+            
+            resultElements.forEach((element, index) => {
+                try {
+                    const titleLink = element.querySelector('dt a');
+                    if (!titleLink) return;
+                    
+                    const title = titleLink.textContent.trim();
+                    const magnetLink = element.querySelector('a[href^="magnet:"]');
+                    if (!magnetLink) return;
+                    
+                    const magnet = magnetLink.href;
+                    
+                    // Extrair informações adicionais
+                    let size = 'N/A';
+                    let files = 'N/A';
+                    let age = 'N/A';
+                    
+                    const sizeElement = element.querySelector('.size');
+                    if (sizeElement) {
+                        size = sizeElement.textContent.trim();
+                    }
+                    
+                    const filesElement = element.querySelector('.files');
+                    if (filesElement) {
+                        files = filesElement.textContent.trim();
+                    }
+                    
+                    const ageElement = element.querySelector('.age');
+                    if (ageElement) {
+                        age = ageElement.textContent.trim();
+                    }
+                    
+                    if (title && magnet && title.length > 3) {
+                        results.push({
+                            title: title,
+                            magnet: magnet,
+                            size: size,
+                            files: files,
+                            age: age,
+                            fileDetails: [],
+                            source: 'Torrentz2'
+                        });
+                    }
+                } catch (error) {
+                    // Erro silencioso ao processar elemento
+                }
+            });
+            
+            return results.slice(0, 10); // Limitar a 10 resultados
+        }
+        
+        function parseNyaaResults(html) {
+            const results = [];
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Procurar por elementos de resultado do Nyaa
+            const resultElements = doc.querySelectorAll('tbody tr');
+            
+            resultElements.forEach((element, index) => {
+                try {
+                    const titleLink = element.querySelector('td:nth-child(2) a:not([href*="comments"])');
+                    if (!titleLink) return;
+                    
+                    const title = titleLink.textContent.trim();
+                    const magnetLink = element.querySelector('a[href^="magnet:"]');
+                    if (!magnetLink) return;
+                    
+                    const magnet = magnetLink.href;
+                    
+                    // Extrair informações adicionais
+                    let size = 'N/A';
+                    let files = 'N/A';
+                    let age = 'N/A';
+                    
+                    const sizeElement = element.querySelector('td:nth-child(4)');
+                    if (sizeElement) {
+                        size = sizeElement.textContent.trim();
+                    }
+                    
+                    const ageElement = element.querySelector('td:nth-child(5)');
+                    if (ageElement) {
+                        age = ageElement.textContent.trim();
+                    }
+                    
+                    if (title && magnet && title.length > 3) {
+                        results.push({
+                            title: title,
+                            magnet: magnet,
+                            size: size,
+                            files: files,
+                            age: age,
+                            fileDetails: [],
+                            source: 'Nyaa.si'
+                        });
+                    }
+                } catch (error) {
+                    // Erro silencioso ao processar elemento
+                }
+            });
+            
+            return results.slice(0, 10); // Limitar a 10 resultados
+        }
+        
+        function removeDuplicateTorrents(results) {
+            const seen = new Set();
+            const unique = [];
+            
+            results.forEach(result => {
+                // Extrair hash do magnet link para identificar duplicatas
+                const hashMatch = result.magnet.match(/btih:([a-fA-F0-9]{40})/);
+                if (hashMatch) {
+                    const hash = hashMatch[1];
+                    if (!seen.has(hash)) {
+                        seen.add(hash);
+                        unique.push(result);
+                    }
+                } else {
+                    // Se não conseguir extrair hash, usar título como fallback
+                    const titleKey = result.title.toLowerCase().trim();
+                    if (!seen.has(titleKey)) {
+                        seen.add(titleKey);
+                        unique.push(result);
+                    }
+                }
+            });
+            
+            return unique;
         }
         
         function displaySearchResults(results) {
@@ -1125,6 +1338,7 @@
                             <span>📁 ${result.files}</span>
                             <span>💾 ${result.size}</span>
                             ${result.age ? `<span>⏰ ${result.age}</span>` : ''}
+                            ${result.source ? `<span style="background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 3px; font-size: 10px;">${result.source}</span>` : ''}
                         </div>
                         ${filesHtml}
                         <div style="margin-top: 10px; text-align: right;">

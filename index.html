@@ -246,107 +246,7 @@
                     <button onclick="loadVideo()" aria-label="Reproduzir vídeo">▶️ Assistir</button>
                 </div>
                 
-                <!-- Opções Avançadas -->
-                <div id="advancedOptions" style="display: block; margin-top: 15px; padding: 15px; background: #fff; border: 1px solid #dee2e6; border-radius: 6px;">
-                    <h4 style="margin: 0 0 15px 0; color: #495057; font-size: 14px;">🎛️ Configurações Avançadas</h4>
-                    
-                    <!-- Poster Image -->
-                    <div style="margin-bottom: 15px;">
-                        <label for="posterUrl" style="display: block; margin-bottom: 5px; font-size: 12px; font-weight: bold; color: #495057;">🖼️ Poster/Thumbnail (URL):</label>
-                        <input 
-                            type="url" 
-                            id="posterUrl" 
-                            placeholder="https://exemplo.com/poster.jpg"
-                            style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 12px;"
-                        >
-                        <small style="color: #6c757d; font-size: 11px;">Imagem que aparece antes do vídeo carregar</small>
-                    </div>
-                    
-                    <!-- IMDB ID -->
-                    <div style="margin-bottom: 15px;">
-                        <label for="imdbId" style="display: block; margin-bottom: 5px; font-size: 12px; font-weight: bold; color: #495057;">🎬 IMDB ID:</label>
-                        <input 
-                            type="text" 
-                            id="imdbId" 
-                            placeholder="tt0133093 (opcional)"
-                            style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 12px;"
-                        >
-                        <small style="color: #6c757d; font-size: 11px;">Para metadados automáticos e subtítulos</small>
-                    </div>
-                    
-                    <!-- Subtítulos -->
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-size: 12px; font-weight: bold; color: #495057;">📝 Subtítulos:</label>
-                        <div id="subtitlesContainer">
-                            <div class="subtitle-item" style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
-                                <div style="display: flex; gap: 10px; margin-bottom: 8px;">
-                                    <input type="text" placeholder="Código (pt, en, es)" style="flex: 1; padding: 6px; border: 1px solid #ced4da; border-radius: 3px; font-size: 11px;">
-                                    <input type="text" placeholder="Rótulo (Português)" style="flex: 1; padding: 6px; border: 1px solid #ced4da; border-radius: 3px; font-size: 11px;">
-                                    <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
-                                        <input type="checkbox" style="margin-right: 5px;"> Padrão
-                                    </label>
-                                </div>
-                                <input type="url" placeholder="URL do arquivo de legenda (.vtt, .srt)" style="width: 100%; padding: 6px; border: 1px solid #ced4da; border-radius: 3px; font-size: 11px;">
-                            </div>
-                        </div>
-                        <button onclick="addSubtitle()" style="padding: 6px 12px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">
-                            ➕ Adicionar Legenda
-                        </button>
-                    </div>
-                    
-                    <!-- Recursos do Player -->
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 8px; font-size: 12px; font-weight: bold; color: #495057;">🎮 Recursos do Player:</label>
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
-                            <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
-                                <input type="checkbox" id="featureSubtitles" checked style="margin-right: 5px;"> Subtítulos
-                            </label>
-                            <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
-                                <input type="checkbox" id="featureSettings" checked style="margin-right: 5px;"> Configurações
-                            </label>
-                            <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
-                                <input type="checkbox" id="featureFullscreen" checked style="margin-right: 5px;"> Tela Cheia
-                            </label>
-                            <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
-                                <input type="checkbox" id="featurePlaypause" checked style="margin-right: 5px;"> Play/Pause
-                            </label>
-                            <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
-                                <input type="checkbox" id="featureTimeline" checked style="margin-right: 5px;"> Timeline
-                            </label>
-                            <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
-                                <input type="checkbox" id="featureVolume" checked style="margin-right: 5px;"> Volume
-                            </label>
-                            <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
-                                <input type="checkbox" id="featureChromecast" style="margin-right: 5px;"> Chromecast
-                            </label>
-                            <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
-                                <input type="checkbox" id="featureEmbed" style="margin-right: 5px;"> Embed
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <!-- Idioma -->
-                    <div style="margin-bottom: 15px;">
-                        <label for="playerLang" style="display: block; margin-bottom: 5px; font-size: 12px; font-weight: bold; color: #495057;">🌐 Idioma da Interface:</label>
-                        <select id="playerLang" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 12px;">
-                            <option value="pt">Português</option>
-                            <option value="en">English</option>
-                            <option value="es">Español</option>
-                            <option value="fr">Français</option>
-                            <option value="de">Deutsch</option>
-                        </select>
-                    </div>
-                    
-                    <!-- Botões de Ação -->
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <button onclick="clearAdvancedSettings()" style="flex: 1; padding: 8px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
-                            🗑️ Limpar Configurações
-                        </button>
-                        <button onclick="saveAdvancedSettings()" style="flex: 1; padding: 8px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
-                            💾 Salvar Configurações
-                        </button>
-                    </div>
-                </div>
+
                 
                 <!-- Exemplos Rápidos -->
                 <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px;">
@@ -460,16 +360,21 @@
             
             document.getElementById('player').appendChild(playerDiv);
             
-            // Coletar configurações avançadas
-            const posterUrl = document.getElementById('posterUrl').value.trim();
-            const imdbId = document.getElementById('imdbId').value.trim();
-            const playerLang = document.getElementById('playerLang').value;
-            
-            // Coletar subtítulos
-            const subtitles = collectSubtitles();
-            
-            // Coletar recursos do player
-            const features = collectPlayerFeatures();
+            // Usar configurações padrão
+            const posterUrl = '';
+            const imdbId = '';
+            const playerLang = 'pt';
+            const subtitles = [];
+            const features = {
+                subtitles: true,
+                settings: true,
+                fullscreen: true,
+                playpause: true,
+                timeline: true,
+                volume: true,
+                chromecast: false,
+                embed: false
+            };
             
             // Configurar Webtor conforme documentação oficial com todas as opções
             window.webtor = window.webtor || [];
@@ -581,87 +486,11 @@
             window.webtor.push(webtorConfig);
         }
         
-        // Função para coletar subtítulos
-        function collectSubtitles() {
-            const subtitles = [];
-            const subtitleItems = document.querySelectorAll('.subtitle-item');
-            
-            subtitleItems.forEach(item => {
-                const inputs = item.querySelectorAll('input');
-                const srclang = inputs[0].value.trim();
-                const label = inputs[1].value.trim();
-                const src = inputs[2].value.trim();
-                const isDefault = inputs[3].checked;
-                
-                if (srclang && label && src) {
-                    subtitles.push({
-                        srclang: srclang,
-                        label: label,
-                        src: src,
-                        default: isDefault
-                    });
-                }
-            });
-            
-            return subtitles;
-        }
-        
-        // Função para coletar recursos do player
-        function collectPlayerFeatures() {
-            const features = {};
-            
-            const featureMap = {
-                'featureSubtitles': 'subtitles',
-                'featureSettings': 'settings',
-                'featureFullscreen': 'fullscreen',
-                'featurePlaypause': 'playpause',
-                'featureTimeline': 'timeline',
-                'featureVolume': 'volume',
-                'featureChromecast': 'chromecast',
-                'featureEmbed': 'embed'
-            };
-            
-            Object.keys(featureMap).forEach(checkboxId => {
-                const checkbox = document.getElementById(checkboxId);
-                if (checkbox) {
-                    features[featureMap[checkboxId]] = checkbox.checked;
-                }
-            });
-            
-            return features;
-        }
+
         
 
         
-        // Função para adicionar novo campo de legenda
-        function addSubtitle() {
-            const container = document.getElementById('subtitlesContainer');
-            const newSubtitle = document.createElement('div');
-            newSubtitle.className = 'subtitle-item';
-            newSubtitle.style.cssText = 'margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px;';
-            
-            newSubtitle.innerHTML = `
-                <div style="display: flex; gap: 10px; margin-bottom: 8px;">
-                    <input type="text" placeholder="Código (pt, en, es)" style="flex: 1; padding: 6px; border: 1px solid #ced4da; border-radius: 3px; font-size: 11px;">
-                    <input type="text" placeholder="Rótulo (Português)" style="flex: 1; padding: 6px; border: 1px solid #ced4da; border-radius: 3px; font-size: 11px;">
-                    <label style="display: flex; align-items: center; font-size: 11px; color: #495057;">
-                        <input type="checkbox" style="margin-right: 5px;"> Padrão
-                    </label>
-                    <button onclick="removeSubtitle(this)" style="padding: 4px 8px; background: #dc3545; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">❌</button>
-                </div>
-                <input type="url" placeholder="URL do arquivo de legenda (.vtt, .srt)" style="width: 100%; padding: 6px; border: 1px solid #ced4da; border-radius: 3px; font-size: 11px;">
-            `;
-            
-            container.appendChild(newSubtitle);
-        }
-        
-        // Função para remover campo de legenda
-        function removeSubtitle(button) {
-            const subtitleItem = button.closest('.subtitle-item');
-            if (subtitleItem) {
-                subtitleItem.remove();
-            }
-        }
+
         
         // Função para carregar exemplos pré-configurados
         function loadExample(example) {
@@ -688,12 +517,8 @@
             
             const exampleData = examples[example];
             if (exampleData) {
-                // Preencher campos com dados do exemplo
+                // Preencher apenas o magnet link
                 document.getElementById('magnet').value = exampleData.magnet;
-                document.getElementById('posterUrl').value = exampleData.poster;
-                document.getElementById('imdbId').value = exampleData.imdbId;
-                
-                // As opções avançadas já estão visíveis
                 
                 showStatus(`✅ Exemplo "${exampleData.title}" carregado! Clique em "Assistir" para reproduzir.`, 'success');
                 
@@ -702,127 +527,7 @@
             }
         }
         
-        // Função para limpar configurações avançadas
-        function clearAdvancedSettings() {
-            // Limpar campos de texto
-            document.getElementById('posterUrl').value = '';
-            document.getElementById('imdbId').value = '';
-            
-            // Resetar idioma para português
-            document.getElementById('playerLang').value = 'pt';
-            
-            // Resetar recursos do player para padrão
-            const defaultFeatures = {
-                'featureSubtitles': true,
-                'featureSettings': true,
-                'featureFullscreen': true,
-                'featurePlaypause': true,
-                'featureTimeline': true,
-                'featureVolume': true,
-                'featureChromecast': false,
-                'featureEmbed': false
-            };
-            
-            Object.keys(defaultFeatures).forEach(checkboxId => {
-                const checkbox = document.getElementById(checkboxId);
-                if (checkbox) {
-                    checkbox.checked = defaultFeatures[checkboxId];
-                }
-            });
-            
-            // Limpar subtítulos (manter apenas o primeiro campo vazio)
-            const container = document.getElementById('subtitlesContainer');
-            const firstSubtitle = container.querySelector('.subtitle-item');
-            if (firstSubtitle) {
-                const inputs = firstSubtitle.querySelectorAll('input');
-                inputs[0].value = '';
-                inputs[1].value = '';
-                inputs[2].value = '';
-                inputs[3].checked = false;
-            }
-            
-            // Remover subtítulos adicionais
-            const additionalSubtitles = container.querySelectorAll('.subtitle-item:not(:first-child)');
-            additionalSubtitles.forEach(subtitle => subtitle.remove());
-            
-            showStatus('✅ Configurações avançadas limpas!', 'success');
-        }
-        
-        // Função para salvar configurações avançadas no localStorage
-        function saveAdvancedSettings() {
-            const settings = {
-                posterUrl: document.getElementById('posterUrl').value,
-                imdbId: document.getElementById('imdbId').value,
-                playerLang: document.getElementById('playerLang').value,
-                features: collectPlayerFeatures(),
-                subtitles: collectSubtitles()
-            };
-            
-            localStorage.setItem('webtorrentAdvancedSettings', JSON.stringify(settings));
-            showStatus('✅ Configurações salvas no navegador!', 'success');
-        }
-        
-        // Função para carregar configurações salvas
-        function loadAdvancedSettings() {
-            const saved = localStorage.getItem('webtorrentAdvancedSettings');
-            if (saved) {
-                try {
-                    const settings = JSON.parse(saved);
-                    
-                    // Carregar configurações básicas
-                    if (settings.posterUrl) document.getElementById('posterUrl').value = settings.posterUrl;
-                    if (settings.imdbId) document.getElementById('imdbId').value = settings.imdbId;
-                    if (settings.playerLang) document.getElementById('playerLang').value = settings.playerLang;
-                    
-                    // Carregar recursos do player
-                    if (settings.features) {
-                        Object.keys(settings.features).forEach(feature => {
-                            const checkboxId = Object.keys(collectPlayerFeatures()).find(id => 
-                                collectPlayerFeatures()[id] === feature
-                            );
-                            if (checkboxId) {
-                                const checkbox = document.getElementById(checkboxId);
-                                if (checkbox) checkbox.checked = settings.features[feature];
-                            }
-                        });
-                    }
-                    
-                    // Carregar subtítulos (implementação simplificada)
-                    if (settings.subtitles && settings.subtitles.length > 0) {
-                        // Limpar subtítulos existentes
-                        const container = document.getElementById('subtitlesContainer');
-                        container.innerHTML = '';
-                        
-                        // Adicionar subtítulos salvos
-                        settings.subtitles.forEach((subtitle, index) => {
-                            if (index === 0) {
-                                // Usar o primeiro campo existente
-                                const firstSubtitle = document.querySelector('.subtitle-item');
-                                if (firstSubtitle) {
-                                    const inputs = firstSubtitle.querySelectorAll('input');
-                                    inputs[0].value = subtitle.srclang;
-                                    inputs[1].value = subtitle.label;
-                                    inputs[2].value = subtitle.src;
-                                    inputs[3].checked = subtitle.default;
-                                }
-                            } else {
-                                // Adicionar novos campos
-                                addSubtitle();
-                                const newSubtitle = container.lastElementChild;
-                                const inputs = newSubtitle.querySelectorAll('input');
-                                inputs[0].value = subtitle.srclang;
-                                inputs[1].value = subtitle.label;
-                                inputs[2].value = subtitle.src;
-                                inputs[3].checked = subtitle.default;
-                            }
-                        });
-                    }
-                    
-                } catch (error) {
-                    // Erro silencioso ao carregar configurações
-                }
-            }
-        }
+
         
         // Método alternativo usando elemento video diretamente
         function tryAlternativeMethod() {
@@ -848,25 +553,7 @@
             videoElement.style.borderRadius = '8px';
             videoElement.src = magnet;
             
-            // Adicionar poster se configurado
-            const posterUrl = document.getElementById('posterUrl').value.trim();
-            if (posterUrl) {
-                videoElement.poster = posterUrl;
-            }
-            
-            // Adicionar subtítulos se configurados
-            const subtitles = collectSubtitles();
-            subtitles.forEach(subtitle => {
-                const trackElement = document.createElement('track');
-                trackElement.kind = 'subtitles';
-                trackElement.srclang = subtitle.srclang;
-                trackElement.label = subtitle.label;
-                trackElement.src = subtitle.src;
-                if (subtitle.default) {
-                    trackElement.default = true;
-                }
-                videoElement.appendChild(trackElement);
-            });
+            // Usar configurações padrão
             
             // Adicionar event listeners
             videoElement.addEventListener('loadstart', () => {
@@ -1385,11 +1072,6 @@
         
         // Auto-focus no campo de busca
         document.getElementById('searchQuery').focus();
-        
-        // Carregar configurações salvas quando a página carregar
-        document.addEventListener('DOMContentLoaded', function() {
-            loadAdvancedSettings();
-        });
     </script>
     
     <!-- Script do Webtor.io conforme documentação oficial -->

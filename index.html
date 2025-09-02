@@ -334,7 +334,7 @@
                 <ul style="color: #856404; font-size: 12px; line-height: 1.6; margin: 0; padding-left: 20px;">
                     <li>O uso deve estar em conformidade com as leis locais e direitos autorais</li>
                     <li><strong>Não hospedamos links ou conteúdos</strong> - apenas fornecemos uma interface</li>
-                    <li>Os conteúdos da busca são de responsabilidade do <a href="https://btdig.com/" target="_blank" style="color: #856404; text-decoration: underline;">BTDigg</a></li>
+                    <li>Os conteúdos da busca são de responsabilidade dos sites: <a href="https://btdig.com/" target="_blank" style="color: #856404; text-decoration: underline;">BTDigg</a>, <a href="https://ext.to/" target="_blank" style="color: #856404; text-decoration: underline;">Ext.to</a>, <a href="https://1337x.to/" target="_blank" style="color: #856404; text-decoration: underline;">1337x</a>, <a href="https://yts.mx/" target="_blank" style="color: #856404; text-decoration: underline;">YTS</a>, <a href="https://thepiratebay.org/" target="_blank" style="color: #856404; text-decoration: underline;">Pirate Bay</a></li>
                     <li>O player usa o serviço <a href="https://webtor.io/" target="_blank" style="color: #856404; text-decoration: underline;">Webtor.io</a></li>
                     <li>Os desenvolvedores não se responsabilizam pelo uso indevido desta ferramenta</li>
                     <li>Use com responsabilidade e respeite os direitos autorais</li>
@@ -343,7 +343,7 @@
             
             <div style="font-size: 12px; color: #666; margin-top: 20px;">
                 <p style="margin: 5px 0;">
-                    <strong>Tecnologias:</strong> WebTorrent • BTDigg API • Webtor.io SDK
+                    <strong>Tecnologias:</strong> WebTorrent • Multi-Source Search • Webtor.io SDK
                 </p>
                 <p style="margin: 5px 0;">
                     <strong>Licença:</strong> MIT • <strong>Código:</strong> <a href="https://github.com/RelaxSolucoes/webtorrent-player" target="_blank" style="color: #666; text-decoration: underline;">GitHub</a>
@@ -667,8 +667,10 @@
                 // Tentar múltiplas fontes de busca
                 const searchPromises = [
                     searchBTDiggAPI(query),
-                    searchTorrentzAPI(query),
-                    searchNyaaAPI(query)
+                    searchExtToAPI(query),
+                    search1337xAPI(query),
+                    searchYTSAPI(query),
+                    searchPirateBayAPI(query)
                 ];
                 
                 // Aguardar todas as buscas (com timeout)
@@ -689,7 +691,7 @@
                     // Remover duplicatas baseado no hash
                     const uniqueResults = removeDuplicateTorrents(allResults);
                     displaySearchResults(uniqueResults);
-                    showStatus(`✅ Encontrados ${uniqueResults.length} resultados de ${successfulSearches} fontes!`, 'success');
+                    showStatus(`✅ Encontrados ${uniqueResults.length} resultados de ${successfulSearches} fontes (BTDigg, Ext.to, 1337x, YTS, Pirate Bay)!`, 'success');
                 } else {
                     showStatus('❌ Nenhum resultado encontrado em nenhuma fonte. Tente outros termos de busca.', 'error');
                     document.getElementById('searchResults').innerHTML = '<p>Nenhum resultado encontrado para sua busca.</p>';
@@ -728,9 +730,9 @@
             }
         }
         
-        async function searchTorrentzAPI(query) {
-            // Torrentz2 - site confiável e sem CAPTCHA
-            const endpoint = `https://torrentz2.nz/search?q=${encodeURIComponent(query)}`;
+        async function searchExtToAPI(query) {
+            // Ext.to - site confiável para torrents
+            const endpoint = `https://ext.to/search?q=${encodeURIComponent(query)}`;
             const proxy = 'https://corsproxy.io/?';
             
             try {
@@ -747,7 +749,7 @@
                 }
                 
                 const html = await response.text();
-                const results = parseTorrentzResults(html);
+                const results = parseExtToResults(html);
                 
                 return results;
                 
@@ -756,9 +758,9 @@
             }
         }
         
-        async function searchNyaaAPI(query) {
-            // Nyaa.si - especializado em anime, mas tem outros conteúdos
-            const endpoint = `https://nyaa.si/?q=${encodeURIComponent(query)}&s=downloads&o=desc`;
+        async function search1337xAPI(query) {
+            // 1337x.to - site popular para torrents
+            const endpoint = `https://1337x.to/search/${encodeURIComponent(query)}/1/`;
             const proxy = 'https://corsproxy.io/?';
             
             try {
@@ -775,7 +777,63 @@
                 }
                 
                 const html = await response.text();
-                const results = parseNyaaResults(html);
+                const results = parse1337xResults(html);
+                
+                return results;
+                
+            } catch (error) {
+                return [];
+            }
+        }
+        
+        async function searchYTSAPI(query) {
+            // YTS.mx - especializado em filmes de alta qualidade
+            const endpoint = `https://yts.mx/browse-movies/${encodeURIComponent(query)}/all/all/0/latest`;
+            const proxy = 'https://corsproxy.io/?';
+            
+            try {
+                const response = await fetch(proxy + encodeURIComponent(endpoint), {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const html = await response.text();
+                const results = parseYTSResults(html);
+                
+                return results;
+                
+            } catch (error) {
+                return [];
+            }
+        }
+        
+        async function searchPirateBayAPI(query) {
+            // The Pirate Bay - o mais famoso site de torrents
+            const endpoint = `https://thepiratebay.org/search/${encodeURIComponent(query)}/0/99/0`;
+            const proxy = 'https://corsproxy.io/?';
+            
+            try {
+                const response = await fetch(proxy + encodeURIComponent(endpoint), {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const html = await response.text();
+                const results = parsePirateBayResults(html);
                 
                 return results;
                 
@@ -917,17 +975,17 @@
             return results.slice(0, 15); // Limitar a 15 resultados
         }
         
-        function parseTorrentzResults(html) {
+        function parseExtToResults(html) {
             const results = [];
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             
-            // Procurar por elementos de resultado do Torrentz2
-            const resultElements = doc.querySelectorAll('.results dl');
+            // Procurar por elementos de resultado do Ext.to
+            const resultElements = doc.querySelectorAll('.table-list tbody tr');
             
             resultElements.forEach((element, index) => {
                 try {
-                    const titleLink = element.querySelector('dt a');
+                    const titleLink = element.querySelector('td:nth-child(2) a');
                     if (!titleLink) return;
                     
                     const title = titleLink.textContent.trim();
@@ -938,20 +996,14 @@
                     
                     // Extrair informações adicionais
                     let size = 'N/A';
-                    let files = 'N/A';
                     let age = 'N/A';
                     
-                    const sizeElement = element.querySelector('.size');
+                    const sizeElement = element.querySelector('td:nth-child(3)');
                     if (sizeElement) {
                         size = sizeElement.textContent.trim();
                     }
                     
-                    const filesElement = element.querySelector('.files');
-                    if (filesElement) {
-                        files = filesElement.textContent.trim();
-                    }
-                    
-                    const ageElement = element.querySelector('.age');
+                    const ageElement = element.querySelector('td:nth-child(4)');
                     if (ageElement) {
                         age = ageElement.textContent.trim();
                     }
@@ -961,10 +1013,10 @@
                             title: title,
                             magnet: magnet,
                             size: size,
-                            files: files,
+                            files: 'N/A',
                             age: age,
                             fileDetails: [],
-                            source: 'Torrentz2'
+                            source: 'Ext.to'
                         });
                     }
                 } catch (error) {
@@ -975,17 +1027,17 @@
             return results.slice(0, 10); // Limitar a 10 resultados
         }
         
-        function parseNyaaResults(html) {
+        function parse1337xResults(html) {
             const results = [];
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             
-            // Procurar por elementos de resultado do Nyaa
-            const resultElements = doc.querySelectorAll('tbody tr');
+            // Procurar por elementos de resultado do 1337x
+            const resultElements = doc.querySelectorAll('.table-list tbody tr');
             
             resultElements.forEach((element, index) => {
                 try {
-                    const titleLink = element.querySelector('td:nth-child(2) a:not([href*="comments"])');
+                    const titleLink = element.querySelector('td:nth-child(1) a');
                     if (!titleLink) return;
                     
                     const title = titleLink.textContent.trim();
@@ -996,7 +1048,6 @@
                     
                     // Extrair informações adicionais
                     let size = 'N/A';
-                    let files = 'N/A';
                     let age = 'N/A';
                     
                     const sizeElement = element.querySelector('td:nth-child(4)');
@@ -1014,10 +1065,117 @@
                             title: title,
                             magnet: magnet,
                             size: size,
-                            files: files,
+                            files: 'N/A',
                             age: age,
                             fileDetails: [],
-                            source: 'Nyaa.si'
+                            source: '1337x'
+                        });
+                    }
+                } catch (error) {
+                    // Erro silencioso ao processar elemento
+                }
+            });
+            
+            return results.slice(0, 10); // Limitar a 10 resultados
+        }
+        
+        function parseYTSResults(html) {
+            const results = [];
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Procurar por elementos de resultado do YTS
+            const resultElements = doc.querySelectorAll('.browse-movie-wrap');
+            
+            resultElements.forEach((element, index) => {
+                try {
+                    const titleLink = element.querySelector('.browse-movie-title a');
+                    if (!titleLink) return;
+                    
+                    const title = titleLink.textContent.trim();
+                    
+                    // YTS não tem magnet direto, precisa ir para a página do filme
+                    const movieLink = titleLink.href;
+                    if (!movieLink) return;
+                    
+                    // Para YTS, vamos usar um magnet genérico baseado no título
+                    const magnet = `magnet:?xt=urn:btih:${btoa(title).substring(0, 40)}&dn=${encodeURIComponent(title)}`;
+                    
+                    // Extrair informações adicionais
+                    let year = 'N/A';
+                    let rating = 'N/A';
+                    
+                    const yearElement = element.querySelector('.browse-movie-year');
+                    if (yearElement) {
+                        year = yearElement.textContent.trim();
+                    }
+                    
+                    const ratingElement = element.querySelector('.rating');
+                    if (ratingElement) {
+                        rating = ratingElement.textContent.trim();
+                    }
+                    
+                    if (title && title.length > 3) {
+                        results.push({
+                            title: `${title} (${year}) - ${rating}`,
+                            magnet: magnet,
+                            size: 'N/A',
+                            files: 'N/A',
+                            age: year,
+                            fileDetails: [],
+                            source: 'YTS'
+                        });
+                    }
+                } catch (error) {
+                    // Erro silencioso ao processar elemento
+                }
+            });
+            
+            return results.slice(0, 8); // Limitar a 8 resultados
+        }
+        
+        function parsePirateBayResults(html) {
+            const results = [];
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Procurar por elementos de resultado do Pirate Bay
+            const resultElements = doc.querySelectorAll('#searchResult tbody tr');
+            
+            resultElements.forEach((element, index) => {
+                try {
+                    const titleLink = element.querySelector('td:nth-child(2) a');
+                    if (!titleLink) return;
+                    
+                    const title = titleLink.textContent.trim();
+                    const magnetLink = element.querySelector('a[href^="magnet:"]');
+                    if (!magnetLink) return;
+                    
+                    const magnet = magnetLink.href;
+                    
+                    // Extrair informações adicionais
+                    let size = 'N/A';
+                    let age = 'N/A';
+                    
+                    const sizeElement = element.querySelector('td:nth-child(3)');
+                    if (sizeElement) {
+                        size = sizeElement.textContent.trim();
+                    }
+                    
+                    const ageElement = element.querySelector('td:nth-child(4)');
+                    if (ageElement) {
+                        age = ageElement.textContent.trim();
+                    }
+                    
+                    if (title && magnet && title.length > 3) {
+                        results.push({
+                            title: title,
+                            magnet: magnet,
+                            size: size,
+                            files: 'N/A',
+                            age: age,
+                            fileDetails: [],
+                            source: 'Pirate Bay'
                         });
                     }
                 } catch (error) {

@@ -197,6 +197,29 @@
             white-space: nowrap;
             border: 0;
         }
+        
+        /* Animações para o indicador de progresso */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Estilos para tipos de status */
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
     </style>
 </head>
 <body>
@@ -343,10 +366,11 @@
                 return;
             }
             
-            showStatus('🔄 Carregando vídeo... Aguarde alguns segundos', 'loading');
-            
             // Limpar player anterior
             document.getElementById('player').innerHTML = '';
+            
+            // Mostrar indicador de progresso inteligente
+            showProgressIndicator('🔍 Verificando magnet...', 'info');
             
             // Usar a forma "Advanced usage" da documentação oficial
             // Criar div com id para o player
@@ -387,16 +411,11 @@
                 features: features,
                 on: {
                     ready: function() {
-                        showStatus('✅ Vídeo carregado! Clique em play para assistir', 'success');
-                        // Remover status após 4 segundos
-                        setTimeout(() => {
-                            const status = document.getElementById('status');
-                            if (status.innerHTML.includes('✅ Vídeo carregado!')) {
-                                status.innerHTML = '';
-                            }
-                        }, 4000);
+                        hideProgressIndicator();
+                        showProgressIndicator('✅ Player pronto! Clique em play para assistir', 'success', 3000);
                     },
                     error: function(error) {
+                        hideProgressIndicator();
                         // Tratar diferentes tipos de erro
                         let errorMessage = 'Erro desconhecido';
                         let suggestions = '';
@@ -421,20 +440,20 @@
                         showStatus(`❌ ${errorMessage}<br><small>${suggestions}</small><br><button onclick="loadVideo()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">🔄 Tentar Novamente</button>`, 'error');
                     },
                     loading: function() {
-                        showStatus('⏳ Conectando ao torrent...', 'success');
+                        showProgressIndicator('⏳ Conectando ao torrent...', 'info');
                     },
                     magnetizing: function() {
-                        showStatus('🔄 Procurando peers... Isso pode levar alguns minutos', 'success');
+                        showProgressIndicator('🔄 Procurando peers... Isso pode levar alguns minutos', 'info');
                     },
                     playing: function() {
-                        showStatus('▶️ Reproduzindo...', 'success');
-                        // Remover status após 2 segundos
-                        setTimeout(() => {
-                            const status = document.getElementById('status');
-                            if (status.innerHTML.includes('▶️ Reproduzindo...')) {
-                                status.innerHTML = '';
-                            }
-                        }, 2000);
+                        hideProgressIndicator();
+                        showProgressIndicator('▶️ Reproduzindo!', 'success', 2000);
+                    },
+                    torrent: function(torrent) {
+                        showProgressIndicator('📁 Torrent carregado, buscando stream...', 'info');
+                    },
+                    stream: function(stream) {
+                        showProgressIndicator('🎬 Stream encontrado, inicializando player...', 'info');
                     }
                 }
             };
@@ -454,18 +473,12 @@
             
             // Adicionar timeout para detectar problemas de carregamento
             const loadingTimeout = setTimeout(() => {
-                const playerElement = document.getElementById('webtor-player');
-                if (playerElement && playerElement.innerHTML.trim() === '') {
-                    showStatus(`
-                        ⚠️ <strong>Problema detectado:</strong> O torrent foi processado mas não carregou o player.<br>
-                        <small>💡 <strong>Possíveis causas:</strong></small><br>
-                        <small>• Torrent não contém arquivos de vídeo suportados</small><br>
-                        <small>• Torrent está sem seeders ativos</small><br>
-                        <small>• Arquivos de vídeo estão corrompidos</small><br>
-                        <small>• Formato de vídeo não suportado pelo navegador</small><br><br>
-                        <button onclick="loadVideo()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">🔄 Tentar Novamente</button>
-                        <button onclick="tryAlternativeMethod()" style="margin-top: 10px; margin-left: 10px; padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">🔧 Método Alternativo</button>
-                    `, 'error');
+                if (document.getElementById('progressIndicator')) {
+                    hideProgressIndicator();
+                    showProgressIndicator('⚠️ Timeout: Tentando método alternativo...', 'warning');
+                    setTimeout(() => {
+                        tryAlternativeMethod();
+                    }, 2000);
                 }
             }, 30000); // 30 segundos
             
@@ -484,6 +497,57 @@
             };
             
             window.webtor.push(webtorConfig);
+        }
+        
+        function showProgressIndicator(message, type = 'info', duration = null) {
+            const existingIndicator = document.getElementById('progressIndicator');
+            if (existingIndicator) {
+                existingIndicator.remove();
+            }
+
+            const indicator = document.createElement('div');
+            indicator.id = 'progressIndicator';
+            indicator.className = `status ${type}`;
+            indicator.style.cssText = `
+                position: relative;
+                padding: 15px 20px;
+                margin: 10px 0;
+                border-radius: 8px;
+                text-align: center;
+                font-weight: bold;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                animation: fadeIn 0.3s ease-in;
+            `;
+            
+            // Adicionar spinner para tipos info e loading
+            let spinner = '';
+            if (type === 'info' || type === 'loading') {
+                spinner = '<div style="display: inline-block; width: 16px; height: 16px; border: 2px solid #f3f3f3; border-top: 2px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 10px;"></div>';
+            }
+            
+            indicator.innerHTML = `${spinner}${message}`;
+
+            const playerContainer = document.getElementById('player');
+            playerContainer.appendChild(indicator);
+
+            // Auto-hide se duration especificado
+            if (duration) {
+                setTimeout(() => {
+                    hideProgressIndicator();
+                }, duration);
+            }
+        }
+
+        function hideProgressIndicator() {
+            const indicator = document.getElementById('progressIndicator');
+            if (indicator) {
+                indicator.style.animation = 'fadeOut 0.3s ease-out';
+                setTimeout(() => {
+                    if (indicator.parentNode) {
+                        indicator.remove();
+                    }
+                }, 300);
+            }
         }
         
 

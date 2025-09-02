@@ -322,11 +322,31 @@
                 height: '500px',
                 on: {
                     ready: function() {
-                        showStatus('✅ Vídeo carregado com sucesso!', 'success');
+                        showStatus('✅ Vídeo carregado! Clique em play para assistir', 'success');
+                        // Remover status após 4 segundos
+                        setTimeout(() => {
+                            const status = document.getElementById('status');
+                            if (status.innerHTML.includes('✅ Vídeo carregado!')) {
+                                status.innerHTML = '';
+                            }
+                        }, 4000);
                     },
                     error: function(error) {
                         showStatus(`❌ Erro ao carregar vídeo: ${error.message || 'Erro desconhecido'}`, 'error');
                         console.error('Erro Webtor:', error);
+                    },
+                    loading: function() {
+                        showStatus('⏳ Conectando ao torrent...', 'success');
+                    },
+                    playing: function() {
+                        showStatus('▶️ Reproduzindo...', 'success');
+                        // Remover status após 2 segundos
+                        setTimeout(() => {
+                            const status = document.getElementById('status');
+                            if (status.innerHTML.includes('▶️ Reproduzindo...')) {
+                                status.innerHTML = '';
+                            }
+                        }, 2000);
                     }
                 }
             });

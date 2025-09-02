@@ -499,59 +499,126 @@
                 return;
             }
             
-            showStatus('🔄 Carregando arquivo .torrent... Aguarde alguns segundos', 'loading');
+            showStatus('🔄 Processando arquivo .torrent... Aguarde alguns segundos', 'loading');
             
             // Limpar player anterior
             document.getElementById('player').innerHTML = '';
             
-            // Criar iframe que carrega webtor.io com o arquivo
-            const iframe = document.createElement('iframe');
-            iframe.style.width = '100%';
-            iframe.style.height = '500px';
-            iframe.style.border = 'none';
-            iframe.style.borderRadius = '8px';
-            iframe.style.backgroundColor = '#f8f9fa';
-            
-            // Criar um formulário temporário para enviar o arquivo
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = 'https://webtor.io/';
-            form.enctype = 'multipart/form-data';
-            form.target = iframe.name = 'webtor-frame-' + Date.now();
-            form.style.display = 'none';
-            
-            // Adicionar o arquivo
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.name = 'resource';
-            fileInput.files = [selectedTorrentFile];
-            form.appendChild(fileInput);
-            
-            // Adicionar instruction
-            const instructionInput = document.createElement('input');
-            instructionInput.type = 'hidden';
-            instructionInput.name = 'instruction';
-            instructionInput.value = '';
-            form.appendChild(instructionInput);
-            
-            // Adicionar iframe ao player
-            document.getElementById('player').appendChild(iframe);
-            
-            // Adicionar formulário ao body e submeter
-            document.body.appendChild(form);
-            form.submit();
-            
-            // Remover formulário após envio
-            setTimeout(() => {
-                if (document.body.contains(form)) {
-                    document.body.removeChild(form);
+            // Converter arquivo .torrent para magnet link usando WebTorrent
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    // Usar WebTorrent para extrair magnet link do arquivo .torrent
+                    if (window.WebTorrent) {
+                        const client = new WebTorrent();
+                        const torrent = client.add(e.target.result);
+                        
+                        torrent.on('ready', function() {
+                            // Criar magnet link a partir do torrent
+                            const magnet = torrent.magnetURI;
+                            
+                            // Usar o magnet link com WebtorEmbed
+                            loadVideoFromMagnet(magnet);
+                            
+                            // Destruir o cliente WebTorrent
+                            client.destroy();
+                        });
+                        
+                        torrent.on('error', function(error) {
+                            showStatus(`❌ Erro ao processar arquivo .torrent: ${error.message}`, 'error');
+                            client.destroy();
+                        });
+                    } else {
+                        showStatus('❌ WebTorrent não disponível. Recarregue a página.', 'error');
+                    }
+                } catch (error) {
+                    showStatus(`❌ Erro ao ler arquivo .torrent: ${error.message}`, 'error');
                 }
-            }, 1000);
+            };
             
-            // Mostrar status de sucesso após um tempo
-            setTimeout(() => {
-                showStatus('✅ Arquivo .torrent carregado! Use os controles do player abaixo.', 'success');
-            }, 3000);
+            reader.onerror = function() {
+                showStatus('❌ Erro ao ler arquivo .torrent', 'error');
+            };
+            
+            reader.readAsArrayBuffer(selectedTorrentFile);
+        }
+        
+        function loadVideoFromMagnet(magnet) {
+            showStatus('🔄 Carregando vídeo... Aguarde alguns segundos', 'loading');
+            
+            // Limpar player anterior
+            document.getElementById('player').innerHTML = '';
+            
+            // Usar a forma "Advanced usage" da documentação oficial
+            const playerDiv = document.createElement('div');
+            playerDiv.id = 'webtor-player';
+            playerDiv.className = 'webtor';
+            playerDiv.style.width = '100%';
+            playerDiv.style.height = '500px';
+            playerDiv.style.border = '2px solid #ddd';
+            playerDiv.style.borderRadius = '8px';
+            
+            document.getElementById('player').appendChild(playerDiv);
+            
+            // Configurar Webtor conforme documentação oficial
+            window.webtor = window.webtor || [];
+            window.webtor.push({
+                id: 'webtor-player',
+                magnet: magnet,
+                width: '100%',
+                height: '500px',
+                on: {
+                    ready: function() {
+                        showStatus('✅ Vídeo carregado! Clique em play para assistir', 'success');
+                        // Remover status após 4 segundos
+                        setTimeout(() => {
+                            const status = document.getElementById('status');
+                            if (status.innerHTML.includes('✅ Vídeo carregado!')) {
+                                status.innerHTML = '';
+                            }
+                        }, 4000);
+                    },
+                    error: function(error) {
+                        console.error('Erro Webtor:', error);
+                        
+                        // Tratar diferentes tipos de erro
+                        let errorMessage = 'Erro desconhecido';
+                        let suggestions = '';
+                        
+                        if (error.message && error.message.includes('deadline exceeded')) {
+                            errorMessage = 'Timeout ao conectar com peers';
+                            suggestions = '💡 Dicas: Tente outro magnet link ou aguarde alguns minutos';
+                        } else if (error.message && error.message.includes('magnetize')) {
+                            errorMessage = 'Não foi possível encontrar peers para este torrent';
+                            suggestions = '💡 Dicas: Torrent pode estar sem seeders ativos';
+                        } else if (error.message && error.message.includes('not found')) {
+                            errorMessage = 'Torrent não encontrado';
+                            suggestions = '💡 Dicas: Verifique se o magnet link está correto';
+                        } else {
+                            errorMessage = error.message || 'Erro ao carregar vídeo';
+                            suggestions = '💡 Dicas: Tente recarregar a página ou usar outro magnet link';
+                        }
+                        
+                        showStatus(`❌ ${errorMessage}<br><small>${suggestions}</small><br><button onclick="loadTorrentFile()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">🔄 Tentar Novamente</button>`, 'error');
+                    },
+                    loading: function() {
+                        showStatus('⏳ Conectando ao torrent...', 'success');
+                    },
+                    magnetizing: function() {
+                        showStatus('🔄 Procurando peers... Isso pode levar alguns minutos', 'success');
+                    },
+                    playing: function() {
+                        showStatus('▶️ Reproduzindo...', 'success');
+                        // Remover status após 2 segundos
+                        setTimeout(() => {
+                            const status = document.getElementById('status');
+                            if (status.innerHTML.includes('▶️ Reproduzindo...')) {
+                                status.innerHTML = '';
+                            }
+                        }, 2000);
+                    }
+                }
+            });
         }
 
         async function searchTorrents() {
@@ -835,6 +902,9 @@
         // Auto-focus no campo de busca
         document.getElementById('searchQuery').focus();
     </script>
+    
+    <!-- Script do WebTorrent para converter arquivos .torrent -->
+    <script src="https://cdn.jsdelivr.net/npm/webtorrent@latest/webtorrent.min.js"></script>
     
     <!-- Script do Webtor.io conforme documentação oficial -->
     <script src="https://cdn.jsdelivr.net/npm/@webtor/embed-sdk-js/dist/index.min.js" charset="utf-8" async></script>
